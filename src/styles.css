@@ -147,6 +147,78 @@ textarea:focus-visible {
   .planning-note {
     @apply rounded-2xl border border-emerald-100 bg-[var(--accent-soft)] px-5 py-4 text-sm leading-6 text-emerald-950;
   }
+  .learning-section {
+    @apply space-y-4 rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_12px_30px_rgb(27_38_35_/_5%)] sm:p-7;
+  }
+  .learning-section__heading {
+    @apply flex items-start justify-between gap-4;
+  }
+  .budget-controls {
+    @apply flex flex-wrap items-center gap-2 rounded-2xl bg-[var(--surface-soft)] p-3;
+  }
+  .budget-controls__label {
+    @apply mr-1 text-sm font-semibold text-[var(--ink)];
+  }
+  .budget-button {
+    @apply min-h-9 rounded-lg border border-[var(--line)] bg-white px-3 text-sm font-semibold text-[var(--muted)] transition hover:border-emerald-300 hover:text-emerald-900;
+  }
+  .budget-button--active {
+    @apply border-emerald-700 bg-emerald-800 text-white hover:bg-emerald-900 hover:text-white;
+  }
+  .budget-custom {
+    @apply flex min-h-9 items-center gap-1 rounded-lg border border-[var(--line)] bg-white px-2 text-sm text-[var(--muted)];
+  }
+  .budget-custom input {
+    @apply w-18 border-0 bg-transparent p-0 text-sm font-semibold text-[var(--ink)] outline-none;
+  }
+  .recommendation-panel {
+    @apply overflow-hidden rounded-2xl border border-[var(--line)];
+  }
+  .recommendation-panel__label,
+  .recommendation-panel__copy {
+    @apply bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-950;
+  }
+  .recommendation-row,
+  .partial-option {
+    @apply flex items-center justify-between gap-4 border-t border-[var(--line)] px-4 py-3;
+  }
+  .partial-option {
+    @apply bg-amber-50;
+  }
+  .manual-choice {
+    @apply border-t border-[var(--line)] bg-[var(--surface-soft)] px-4 py-3 text-sm font-semibold text-[var(--ink)];
+  }
+  .manual-choice summary {
+    @apply cursor-pointer;
+  }
+  .manual-choice__list {
+    @apply mt-3 overflow-hidden rounded-xl border border-[var(--line)] bg-white;
+  }
+  .learning-view {
+    @apply space-y-5 rounded-2xl border border-[var(--line)] bg-[var(--surface-soft)] p-5;
+  }
+  .learning-view__head,
+  .learning-view__complete {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+  .learning-view__complete {
+    @apply rounded-xl bg-white p-4;
+  }
+  .focus-timer {
+    @apply flex flex-col gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 sm:flex-row sm:items-center sm:justify-between;
+  }
+  .focus-timer__label {
+    @apply text-sm font-semibold text-emerald-950;
+  }
+  .focus-timer__time {
+    @apply mt-1 font-mono text-3xl font-semibold tracking-[-0.07em] text-emerald-950;
+  }
+  .dialog-backdrop {
+    @apply fixed inset-0 z-20 flex items-center justify-center bg-slate-950/35 p-5 backdrop-blur-sm;
+  }
+  .takeaway-input {
+    @apply mt-5 w-full rounded-xl border border-[var(--line)] bg-white px-3 py-3 text-sm text-[var(--ink)] outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/30;
+  }
   .text-action {
     @apply font-semibold text-[var(--accent-strong)] underline decoration-emerald-400/50 underline-offset-4 transition hover:decoration-[var(--accent-strong)];
   }

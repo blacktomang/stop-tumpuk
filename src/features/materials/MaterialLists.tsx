@@ -14,6 +14,7 @@ export function MaterialLists({ materials, onEdit, onMove, onDelete }: MaterialL
     (material) => material.status === 'queued' || material.status === 'in-progress',
   );
   const archived = materials.filter((material) => material.status === 'archived');
+  const completed = materials.filter((material) => material.status === 'completed');
   return (
     <>
       <section aria-label="Your saved materials" className="workspace-grid">
@@ -35,6 +36,7 @@ export function MaterialLists({ materials, onEdit, onMove, onDelete }: MaterialL
         />
       </section>
       {archived.length > 0 && <Archived materials={archived} onMove={onMove} onDelete={onDelete} />}
+      {completed.length > 0 && <Completed materials={completed} onMove={onMove} />}
     </>
   );
 }
@@ -109,6 +111,29 @@ function MaterialList({
         ) : (
           <p className="empty-state">{empty}</p>
         )}
+      </div>
+    </section>
+  );
+}
+
+function Completed({ materials, onMove }: Pick<MaterialListsProps, 'onMove'> & { materials: Material[] }) {
+  return (
+    <section className="archive-panel">
+      <div className="mb-4">
+        <h2 className="list-panel__title">Completed</h2>
+        <p className="list-panel__copy">
+          Deliberately finished materials. Reopen one if you want to return to it.
+        </p>
+      </div>
+      <div>
+        {materials.map((material) => (
+          <div key={material.id} className="archive-row">
+            <span className="truncate text-sm font-medium text-(--ink)">{material.title}</span>
+            <button className="action" onClick={() => onMove(material, 'queued')}>
+              Reopen
+            </button>
+          </div>
+        ))}
       </div>
     </section>
   );

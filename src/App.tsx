@@ -7,6 +7,7 @@ import { CaptureForm } from './features/capture/CaptureForm';
 import { CommitmentDashboard } from './features/dashboard/CommitmentDashboard';
 import { EditMaterialDialog } from './features/materials/EditMaterialDialog';
 import { MaterialLists } from './features/materials/MaterialLists';
+import { LearningWorkspace } from './features/learning/LearningWorkspace';
 import { AvailabilityDialog } from './features/settings/AvailabilityDialog';
 import { useMaterials } from './repositories/material-repository';
 import { useSettings } from './repositories/settings-repository';
@@ -121,6 +122,15 @@ export default function App() {
           weekdayMinutes={settings.weekdayMinutes}
           weekendMinutes={settings.weekendMinutes}
           onAvailability={() => setOnboarding(true)}
+        />
+        <LearningWorkspace
+          materials={materials}
+          onInProgress={(material) =>
+            material.status === 'in-progress'
+              ? Promise.resolve()
+              : changeMaterialStatus(material, 'in-progress')
+          }
+          onComplete={(material) => changeMaterialStatus(material, 'completed')}
         />
         <MaterialLists
           materials={materials}
