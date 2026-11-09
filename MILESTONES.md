@@ -84,16 +84,18 @@ Implementation verification: TypeScript, domain tests, formatting, linting, and 
 
 ### Deliverables
 
-- [ ] Create, edit, delete, and view notes attached to materials.
-- [ ] Notes available during learning and after completion.
-- [ ] Material and note search/filtering.
-- [ ] Export/import of materials, notes, and user settings.
-- [ ] Import validation and versioned migration behavior.
-- [ ] Offline access to local metadata, queue, and notes where PWA support permits.
-- [ ] Clear local-data-loss messaging and responsive accessibility checks.
-- [ ] End-to-end tests for capture → estimate/fallback → commit → choose by time → learn → complete, with optional takeaway and archive paths.
-- [ ] Validate paste-to-completion on the chosen mobile/desktop browser matrix; separately verify incoming sharing on installed Android Chrome PWA, including URLs embedded in shared text.
-- [ ] Clearly explain local device storage and the absence of automatic cross-device synchronization.
+- [x] Create, edit, delete, and view notes attached to materials.
+- [x] Notes available during learning and after completion.
+- [x] Material and note search/filtering.
+- [x] Export/import of materials, notes, and user settings.
+- [x] Import validation and versioned migration behavior.
+- [x] Offline access to local metadata, queue, and notes where PWA support permits.
+- [x] Clear local-data-loss messaging and responsive accessibility checks.
+- [ ] End-to-end tests for capture → estimate/fallback → commit → choose by time → learn → complete, with optional takeaway and archive paths. Test is implemented but cannot execute here because the available Chromium runtime lacks `libnspr4.so`.
+- [ ] Validate paste-to-completion on the chosen mobile/desktop browser matrix; separately verify incoming sharing on installed Android Chrome PWA, including URLs embedded in shared text. Requires physical browser/device validation.
+- [x] Clearly explain local device storage and the absence of automatic cross-device synchronization.
+
+Implementation verification: TypeScript, unit tests, linting, formatting, and the production PWA build pass. The new Playwright production-flow test is present but blocked by a missing host Chromium library (`libnspr4.so`); physical-device sharing validation remains outstanding.
 
 ### Acceptance criteria
 
