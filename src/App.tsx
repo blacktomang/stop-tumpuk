@@ -1,3 +1,5 @@
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { nextAvailabilityReminder, shouldPromptForAvailability } from './application/availability-reminder';
 import { changeMaterialStatus, deleteMaterial } from './application/material-service';
@@ -87,6 +89,23 @@ export default function App() {
     }
   }
 
+  const navigationItems = (
+    <>
+      <a className="nav-link" href="#queue">
+        Queue
+      </a>
+      <a className="nav-link" href="#inbox">
+        Inbox
+      </a>
+      <button className="nav-link nav-link--action" onClick={() => setOnboarding(true)}>
+        Set time
+      </button>
+      <button className="nav-link" onClick={() => setDataDialog(true)}>
+        Data
+      </button>
+    </>
+  );
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -103,20 +122,34 @@ export default function App() {
               <p className="brand__line">Make space for what you want to learn.</p>
             </div>
           </div>
-          <nav aria-label="stop-tumpuk navigation" className="app-nav">
-            <a className="nav-link" href="#queue">
-              Queue
-            </a>
-            <a className="nav-link" href="#inbox">
-              Inbox
-            </a>
-            <button className="nav-link nav-link--action" onClick={() => setOnboarding(true)}>
-              Set time
-            </button>
-            <button className="nav-link" onClick={() => setDataDialog(true)}>
-              Data
-            </button>
+          <nav aria-label="stop-tumpuk navigation" className="app-nav hidden md:flex">
+            {navigationItems}
           </nav>
+          <Popover className="relative shrink-0 md:hidden">
+            {({ open, close }) => (
+              <>
+                <PopoverButton
+                  aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+                  className="nav-link flex size-11 items-center justify-center p-2"
+                >
+                  {open ? (
+                    <XMarkIcon aria-hidden="true" className="size-6" />
+                  ) : (
+                    <Bars3Icon aria-hidden="true" className="size-6" />
+                  )}
+                </PopoverButton>
+                <PopoverPanel className="absolute right-0 top-full mt-3 w-52 rounded-xl border border-(--line) bg-(--surface) p-2 shadow-lg">
+                  <nav
+                    aria-label="stop-tumpuk navigation"
+                    className="flex flex-col gap-1 text-sm font-medium [&>.nav-link]:min-h-11 [&>.nav-link]:text-left"
+                    onClick={() => close()}
+                  >
+                    {navigationItems}
+                  </nav>
+                </PopoverPanel>
+              </>
+            )}
+          </Popover>
         </div>
       </header>
       <div className="app-content">
