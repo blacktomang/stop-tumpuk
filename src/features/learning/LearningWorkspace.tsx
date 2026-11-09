@@ -16,9 +16,10 @@ interface LearningWorkspaceProps {
   materials: Material[];
   onInProgress: (material: Material) => Promise<void>;
   onComplete: (material: Material) => Promise<void>;
+  onNotes: (material: Material) => void;
 }
 
-export function LearningWorkspace({ materials, onInProgress, onComplete }: LearningWorkspaceProps) {
+export function LearningWorkspace({ materials, onInProgress, onComplete, onNotes }: LearningWorkspaceProps) {
   const [budgetMinutes, setBudgetMinutes] = useState(15);
   const [customBudget, setCustomBudget] = useState('');
   const [selected, setSelected] = useState<Material | null>(null);
@@ -102,6 +103,7 @@ export function LearningWorkspace({ materials, onInProgress, onComplete }: Learn
           onBack={() => setSelected(null)}
           onBegin={() => begin(selected)}
           onComplete={onComplete}
+          onNotes={onNotes}
         />
       ) : (
         <RecommendationList
@@ -192,11 +194,13 @@ function LearningView({
   onBack,
   onBegin,
   onComplete,
+  onNotes,
 }: {
   material: Material;
   onBack: () => void;
   onBegin: () => Promise<void>;
   onComplete: (material: Material) => Promise<void>;
+  onNotes: (material: Material) => void;
 }) {
   const [showCompletion, setShowCompletion] = useState(false);
   const [error, setError] = useState('');
@@ -237,6 +241,9 @@ function LearningView({
         </button>
       )}
       <FocusTimer material={material} onBegin={onBegin} />
+      <button className="action" onClick={() => onNotes(material)}>
+        View notes
+      </button>
       <div className="learning-view__complete">
         <div>
           <p className="font-semibold text-(--ink)">Finished with this material?</p>

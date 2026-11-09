@@ -8,6 +8,7 @@ import { CommitmentDashboard } from './features/dashboard/CommitmentDashboard';
 import { EditMaterialDialog } from './features/materials/EditMaterialDialog';
 import { MaterialLists } from './features/materials/MaterialLists';
 import { LearningWorkspace } from './features/learning/LearningWorkspace';
+import { NotesDialog } from './features/notes/NotesDialog';
 import { AvailabilityDialog } from './features/settings/AvailabilityDialog';
 import { useMaterials } from './repositories/material-repository';
 import { useSettings } from './repositories/settings-repository';
@@ -17,6 +18,7 @@ export default function App() {
   const materials = useMaterials();
   const settings = useSettings();
   const [editing, setEditing] = useState<Material | null>(null);
+  const [notesFor, setNotesFor] = useState<Material | null>(null);
   const [onboarding, setOnboarding] = useState(false);
   const [intakeUrl, setIntakeUrl] = useState<string | null>(null);
   const [operationError, setOperationError] = useState('');
@@ -131,10 +133,12 @@ export default function App() {
               : changeMaterialStatus(material, 'in-progress')
           }
           onComplete={(material) => changeMaterialStatus(material, 'completed')}
+          onNotes={setNotesFor}
         />
         <MaterialLists
           materials={materials}
           onEdit={setEditing}
+          onNotes={setNotesFor}
           onMove={(material, status) => void moveMaterial(material, status)}
           onDelete={(material) => void removeMaterial(material)}
         />
@@ -144,6 +148,7 @@ export default function App() {
         readingWpm={settings.readingWpm}
         onClose={() => setEditing(null)}
       />
+      <NotesDialog material={notesFor} onClose={() => setNotesFor(null)} />
       <AvailabilityDialog
         open={onboarding}
         settings={settings}

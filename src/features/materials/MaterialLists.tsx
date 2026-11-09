@@ -4,11 +4,12 @@ import type { Material } from '../../types';
 interface MaterialListsProps {
   materials: Material[];
   onEdit: (material: Material) => void;
+  onNotes: (material: Material) => void;
   onMove: (material: Material, destination: 'inbox' | 'queued' | 'archived') => void;
   onDelete: (material: Material) => void;
 }
 
-export function MaterialLists({ materials, onEdit, onMove, onDelete }: MaterialListsProps) {
+export function MaterialLists({ materials, onEdit, onNotes, onMove, onDelete }: MaterialListsProps) {
   const inbox = materials.filter((material) => material.status === 'inbox');
   const queue = materials.filter(
     (material) => material.status === 'queued' || material.status === 'in-progress',
@@ -23,6 +24,7 @@ export function MaterialLists({ materials, onEdit, onMove, onDelete }: MaterialL
           materials={queue}
           empty="Commit a few Inbox items when they are worth your time."
           onEdit={onEdit}
+          onNotes={onNotes}
           onMove={onMove}
           onDelete={onDelete}
         />
@@ -31,6 +33,7 @@ export function MaterialLists({ materials, onEdit, onMove, onDelete }: MaterialL
           materials={inbox}
           empty="Your saved links will appear here."
           onEdit={onEdit}
+          onNotes={onNotes}
           onMove={onMove}
           onDelete={onDelete}
         />
@@ -46,6 +49,7 @@ function MaterialList({
   materials,
   empty,
   onEdit,
+  onNotes,
   onMove,
   onDelete,
 }: Omit<MaterialListsProps, 'materials'> & {
@@ -92,6 +96,9 @@ function MaterialList({
               <div className="material-actions">
                 <button className="action" onClick={() => onEdit(material)}>
                   Edit estimate
+                </button>
+                <button className="action" onClick={() => onNotes(material)}>
+                  Notes
                 </button>
                 <button
                   className="action"
