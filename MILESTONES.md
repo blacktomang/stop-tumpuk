@@ -55,16 +55,16 @@ Implementation verification: TypeScript, domain tests, formatting, linting, and 
 
 ### Deliverables
 
-- [ ] Deterministic recommendation engine based on priority, available time, effort, and in-progress status.
-- [ ] Time-budget shortcuts and custom input; unknown effort cannot be claimed to fit, and no-match results offer manual alternatives.
-- [ ] Manual selection and override of recommended material.
-- [ ] Learning view with source link or supported embedded viewer.
-- [ ] Optional Pomodoro timer with start, pause, resume, and end controls.
-- [ ] In Progress state for materials requiring multiple sessions.
-- [ ] Explicit Complete button; timer ending never marks completion.
-- [ ] Optional takeaway prompt on completion, with Skip action.
-- [ ] Dashboard and queue refresh when material is completed or reopened.
-- [ ] Manual remaining-effort adjustment for unfinished materials (recommended; confirm before implementation).
+- [x] Deterministic recommendation engine based on priority, available time, effort, and in-progress status.
+- [x] Time-budget shortcuts and custom input; unknown effort cannot be claimed to fit, and no-match results offer manual alternatives.
+- [x] Manual selection and override of recommended material.
+- [x] Learning view with source link or supported embedded viewer.
+- [x] Optional Pomodoro timer with start, pause, resume, and end controls.
+- [x] In Progress state for materials requiring multiple sessions.
+- [x] Explicit Complete button; timer ending never marks completion.
+- [x] Optional takeaway prompt on completion, with Skip action.
+- [x] Dashboard and queue refresh when material is completed or reopened.
+- [ ] Manual remaining-effort adjustment for unfinished materials (recommended; confirm before implementation). Remains unresolved per PRD section 15.
 
 ### Acceptance criteria
 

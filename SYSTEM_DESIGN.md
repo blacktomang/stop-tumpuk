@@ -96,7 +96,7 @@ A proposed deterministic ranking first selects active queue items with known eff
 
 Open the source externally unless an allowed embed is available. Preserve the material-detail route for returning to the app. Marking In Progress and Complete are application commands; launching a URL does not prove the user consumed it. Completion updates material state and history in a transaction, then offers an optional takeaway. Note-save failure must allow retry without undoing or duplicating completion.
 
-If a timer runs, persist timestamps and pause state rather than trusting a background `setInterval`. Recalculate elapsed time when the page resumes. Handle interrupted sessions without marking material complete. Timer configuration remains the product decision recorded in the PRD; it is not required for opening or finishing material.
+If a timer runs, persist timestamps and pause state rather than trusting a background `setInterval`. Recalculate elapsed time when the page resumes. Handle interrupted sessions without marking material complete. The Milestone 2 implementation uses a fixed optional 25-minute focus interval with start, pause, resume, and end controls; custom focus and break durations remain the open product question recorded in the PRD and are not exposed as settings.
 
 ### Notes, export/import, and migrations — FR-10, FR-13
 
