@@ -20,8 +20,8 @@
 | PWA                      | `vite-plugin-pwa`, custom service worker with `injectManifest` | App-shell caching plus control over incoming share POST handling                                                   |
 | Domain/unit tests        | Vitest                                                         | Verify pure rules and application services                                                                         |
 | UI tests                 | Deferred until a UI-testing dependency is added                | Focused domain tests cover Milestone 1 deterministic rules                                                         |
-| Storage tests            | Deferred until `fake-indexeddb` is added                       | Real-browser persistence validation remains required before marking the milestone complete                         |
-| Browser tests            | Deferred until Playwright is installed                         | Main workflow and production-build/offline checks remain release validation                                        |
+| Storage tests            | Vitest with `fake-indexeddb`                                   | Validate IndexedDB migrations and import/export integrity without a browser                                        |
+| Browser tests            | Playwright                                                     | Validate the primary workflow against a production build; native share still needs physical-device validation      |
 | Formatting/linting       | Prettier + ESLint with `typescript-eslint`                     | Prettier is the formatting authority; ESLint parses TypeScript and handles static code checks                      |
 | Packages                 | pnpm, one committed `pnpm-lock.yaml`                           | Fast, reproducible installs without multiple package managers                                                      |
 | Hosting                  | HTTPS static hosting with SPA rewrites                         | No core runtime server; preserve navigable routes and PWA scope                                                    |
