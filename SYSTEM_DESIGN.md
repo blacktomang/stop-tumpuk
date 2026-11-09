@@ -88,7 +88,7 @@ Track consumed intake IDs so reloads cannot create duplicate saves from the same
 
 Pure functions take validated records and settings and return estimated effort with provenance, partial backlog totals, or recommendation results. The formulas and treatment of unknown values are owned by the PRD.
 
-Use the manual total-effort override first. Otherwise calculate from the chosen content basis and preferences. Round for display at the final boundary, not repeatedly inside calculations. Until the remaining-effort question in PRD section 15 is resolved, use the fixed estimate for unfinished items; do not subtract timer time automatically or implement a manual remaining-effort feature by assumption.
+Use the manual total-effort override first. Otherwise calculate from the chosen content basis and preferences. Round for display at the final boundary, not repeatedly inside calculations. The remaining-effort control was explicitly deferred on November 9, 2026: use the fixed estimate for unfinished items, and do not subtract timer time automatically.
 
 A proposed deterministic ranking first selects active queue items with known effort that fits the budget, then orders by priority, in-progress status, shorter effort, and stable creation-time/ID tie-breakers. Keep ranking parameters in one domain module. Surface a no-match result separately from optional partial-session suggestions. Document intentional ranking changes with tests; they must preserve FR-07.
 
