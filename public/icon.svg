@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>stop-tumpuk</title>
+  <rect width="512" height="512" rx="112" fill="#1b2623"/>
+  <path d="M146 136h220v240H146z" fill="#eef2ff"/>
+  <path d="M184 196h144M184 256h144M184 316h88" stroke="#087f5b" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="360" cy="350" r="58" fill="#34d399"/>
+  <path d="m334 350 17 17 34-39" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
