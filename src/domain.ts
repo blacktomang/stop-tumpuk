@@ -67,3 +67,37 @@ export function wordCount(text: string): number {
 
   return trimmed.split(/\s+/u).length;
 }
+
+export interface RecommendationResult {
+  fitting: Material[];
+  partial: Material | null;
+}
+
+/**
+ * Rank active materials predictably for a user's available time. Unknown estimates
+ * stay out of automatic recommendations: they may be opened manually, but cannot
+ * truthfully be described as fitting a time budget.
+ */
+export function recommendMaterials(materials: Material[], availableSeconds: number): RecommendationResult {
+  const active = materials.filter(
+    (material) => material.status === 'queued' || material.status === 'in-progress',
+  );
+  const known = active
+    .map((material) => ({ material, effort: effortSeconds(material) }))
+    .filter((entry): entry is { material: Material; effort: number } => entry.effort !== null);
+  const compare = (
+    left: { material: Material; effort: number },
+    right: { material: Material; effort: number },
+  ) =>
+    left.material.priority - right.material.priority ||
+    Number(right.material.status === 'in-progress') - Number(left.material.status === 'in-progress') ||
+    left.effort - right.effort ||
+    left.material.createdAt.localeCompare(right.material.createdAt) ||
+    left.material.id.localeCompare(right.material.id);
+  const ordered = known.sort(compare);
+
+  return {
+    fitting: ordered.filter((entry) => entry.effort <= availableSeconds).map((entry) => entry.material),
+    partial: ordered.find((entry) => entry.effort > availableSeconds)?.material ?? null,
+  };
+}

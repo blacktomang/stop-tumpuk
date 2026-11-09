@@ -4,6 +4,7 @@ import {
   effortSeconds,
   extractSharedUrl,
   normalizeUrl,
+  recommendMaterials,
   weeklyCapacitySeconds,
   wordCount,
 } from './domain';
@@ -63,5 +64,33 @@ describe('Milestone 1 planning rules', () => {
     expect(extractSharedUrl('Read this: https://example.com/article today')).toBe(
       'https://example.com/article',
     );
+  });
+});
+
+describe('Milestone 2 recommendation rules', () => {
+  it('ranks fitting material by priority, then in-progress state and effort', () => {
+    const result = recommendMaterials(
+      [
+        material({ id: 'lower-priority', priority: 3, manualEffortSeconds: 300 }),
+        material({ id: 'in-progress', status: 'in-progress', priority: 2, manualEffortSeconds: 600 }),
+        material({ id: 'shorter', priority: 2, manualEffortSeconds: 300 }),
+      ],
+      600,
+    );
+
+    expect(result.fitting.map((item) => item.id)).toEqual(['in-progress', 'shorter', 'lower-priority']);
+  });
+
+  it('does not claim unknown effort fits and offers a larger partial-session option', () => {
+    const result = recommendMaterials(
+      [
+        material({ id: 'unknown', contentSeconds: null }),
+        material({ id: 'long', manualEffortSeconds: 1_200 }),
+      ],
+      600,
+    );
+
+    expect(result.fitting).toEqual([]);
+    expect(result.partial?.id).toBe('long');
   });
 });
