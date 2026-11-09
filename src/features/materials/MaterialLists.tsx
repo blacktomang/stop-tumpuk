@@ -73,7 +73,7 @@ export function MaterialLists({ materials, onEdit, onNotes, onMove, onDelete }: 
         />
       </section>
       {archived.length > 0 && <Archived materials={archived} onMove={onMove} onDelete={onDelete} />}
-      {completed.length > 0 && <Completed materials={completed} onMove={onMove} />}
+      {completed.length > 0 && <Completed materials={completed} onMove={onMove} onNotes={onNotes} />}
     </>
   );
 }
@@ -157,7 +157,11 @@ function MaterialList({
   );
 }
 
-function Completed({ materials, onMove }: Pick<MaterialListsProps, 'onMove'> & { materials: Material[] }) {
+function Completed({
+  materials,
+  onMove,
+  onNotes,
+}: Pick<MaterialListsProps, 'onMove' | 'onNotes'> & { materials: Material[] }) {
   return (
     <section className="archive-panel">
       <div className="mb-4">
@@ -170,9 +174,14 @@ function Completed({ materials, onMove }: Pick<MaterialListsProps, 'onMove'> & {
         {materials.map((material) => (
           <div key={material.id} className="archive-row">
             <span className="truncate text-sm font-medium text-(--ink)">{material.title}</span>
-            <button className="action" onClick={() => onMove(material, 'queued')}>
-              Reopen
-            </button>
+            <span className="flex shrink-0 gap-2">
+              <button className="action" onClick={() => onNotes(material)}>
+                Notes
+              </button>
+              <button className="action" onClick={() => onMove(material, 'queued')}>
+                Reopen
+              </button>
+            </span>
           </div>
         ))}
       </div>

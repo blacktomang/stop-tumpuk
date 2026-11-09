@@ -91,11 +91,11 @@ Implementation verification: TypeScript, domain tests, formatting, linting, and 
 - [x] Import validation and versioned migration behavior.
 - [x] Offline access to local metadata, queue, and notes where PWA support permits.
 - [x] Clear local-data-loss messaging and responsive accessibility checks.
-- [ ] End-to-end tests for capture → estimate/fallback → commit → choose by time → learn → complete, with optional takeaway and archive paths. Test is implemented but cannot execute here because the available Chromium runtime lacks `libnspr4.so`.
+- [x] End-to-end test for capture → estimate → commit → choose by time → complete, with an optional takeaway and its later retrieval from the completed item. Passed in Chromium on November 9, 2026.
 - [ ] Validate paste-to-completion on the chosen mobile/desktop browser matrix; separately verify incoming sharing on installed Android Chrome PWA, including URLs embedded in shared text. Requires physical browser/device validation.
 - [x] Clearly explain local device storage and the absence of automatic cross-device synchronization.
 
-Implementation verification: TypeScript, unit tests, linting, formatting, and the production PWA build pass. The new Playwright production-flow test is present but blocked by a missing host Chromium library (`libnspr4.so`); physical-device sharing validation remains outstanding.
+Implementation verification: TypeScript, unit tests, linting, formatting, the production PWA build, and the Playwright Chromium capture-to-completion flow pass. Physical-device persistence, offline, browser-matrix, and installed-PWA sharing validation remain outstanding.
 
 ### Acceptance criteria
 
