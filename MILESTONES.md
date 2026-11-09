@@ -66,6 +66,8 @@ Implementation verification: TypeScript, domain tests, formatting, linting, and 
 - [x] Dashboard and queue refresh when material is completed or reopened.
 - [ ] Manual remaining-effort adjustment for unfinished materials (recommended; confirm before implementation). Remains unresolved per PRD section 15.
 
+Implementation verification: TypeScript, domain tests, formatting, linting, and the production PWA build pass. The Milestone 2 browser acceptance flow remains unverified in this environment: no Playwright package or browser binary is available.
+
 ### Acceptance criteria
 
 1. The user can select a material, begin a focus session, and return to it later.
