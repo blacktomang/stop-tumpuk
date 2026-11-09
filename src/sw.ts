@@ -20,7 +20,7 @@ self.addEventListener('fetch', (event) => {
       const title = String(data.get('title') || '');
       const intakeId = crypto.randomUUID();
       await new Promise<void>((resolve, reject) => {
-        const open = indexedDB.open('stop-tumpuk', 2);
+        const open = indexedDB.open('stop-tumpuk', 4);
         open.onupgradeneeded = () => {
           const database = open.result;
           const materials = database.objectStoreNames.contains('materials')

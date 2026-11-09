@@ -108,7 +108,7 @@ Database migrations are versioned and transactional where IndexedDB permits. Han
 
 ## Offline, updates, and deployment
 
-Precache the app shell and bundled assets. Read the queue, settings, and notes from IndexedDB while offline. Do not cache third-party articles, media, or private content by default. External content still needs its source network/access permissions.
+Precache the app shell and bundled assets. Read the queue, settings, and notes from IndexedDB while offline. Do not cache third-party articles, media, or private content by default. External content still needs its source network/access permissions. The UI explains that local browser data is not cross-device storage and makes a manual export available for backup or transfer.
 
 Prompt before activating an update that would reload the page; preserve in-progress edits and timer state. Keep old/new application and database versions compatible during upgrades, and test service-worker activation separately from database migrations. Clear obsolete asset caches without touching user data.
 
