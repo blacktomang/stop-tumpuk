@@ -225,6 +225,21 @@ textarea:focus-visible {
   .workspace-grid {
     @apply grid items-start gap-5 lg:grid-cols-2;
   }
+  .material-filters {
+    @apply rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4;
+  }
+  .material-search {
+    @apply w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/30;
+  }
+  .filter-buttons {
+    @apply mt-3 flex flex-wrap gap-2;
+  }
+  .filter-button {
+    @apply min-h-8 rounded-full border border-[var(--line)] bg-white px-3 text-xs font-semibold capitalize text-[var(--muted)] transition hover:border-emerald-300 hover:text-emerald-900;
+  }
+  .filter-button--active {
+    @apply border-emerald-700 bg-emerald-800 text-white hover:bg-emerald-900 hover:text-white;
+  }
   .list-panel,
   .archive-panel {
     @apply overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)];

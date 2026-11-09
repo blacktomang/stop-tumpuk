@@ -10,15 +10,20 @@ export function NotesDialog({ material, onClose }: { material: Material | null; 
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     setEditing(null);
     setContent('');
     setError('');
+    setQuery('');
   }, [material]);
 
   if (!material) return null;
   const selectedMaterial = material;
+  const visibleNotes = notes.filter((note) =>
+    note.content.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+  );
 
   function startEditing(note?: Note) {
     setEditing(
@@ -106,24 +111,41 @@ export function NotesDialog({ material, onClose }: { material: Material | null; 
                 </div>
               </div>
             ) : notes.length ? (
-              <div className="mt-5 divide-y divide-[var(--line)] rounded-xl border border-[var(--line)]">
-                {notes.map((note) => (
-                  <article key={note.id} className="p-4">
-                    <p className="whitespace-pre-wrap text-sm leading-6 text-(--ink)">{note.content}</p>
-                    <div className="mt-3 flex items-center justify-between gap-3 text-xs text-(--muted)">
-                      <span>Updated {new Date(note.updatedAt).toLocaleDateString()}</span>
-                      <span className="flex gap-2">
-                        <button className="action" onClick={() => startEditing(note)}>
-                          Edit
-                        </button>
-                        <button className="action-danger" onClick={() => void remove(note)}>
-                          Delete
-                        </button>
-                      </span>
-                    </div>
-                  </article>
-                ))}
-              </div>
+              <>
+                <label className="sr-only" htmlFor="note-search">
+                  Search notes
+                </label>
+                <input
+                  id="note-search"
+                  type="search"
+                  className="mt-5 w-full"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search these notes"
+                />
+                {visibleNotes.length ? (
+                  <div className="mt-3 divide-y divide-[var(--line)] rounded-xl border border-[var(--line)]">
+                    {visibleNotes.map((note) => (
+                      <article key={note.id} className="p-4">
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-(--ink)">{note.content}</p>
+                        <div className="mt-3 flex items-center justify-between gap-3 text-xs text-(--muted)">
+                          <span>Updated {new Date(note.updatedAt).toLocaleDateString()}</span>
+                          <span className="flex gap-2">
+                            <button className="action" onClick={() => startEditing(note)}>
+                              Edit
+                            </button>
+                            <button className="action-danger" onClick={() => void remove(note)}>
+                              Delete
+                            </button>
+                          </span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="empty-state">No notes match that search.</p>
+                )}
+              </>
             ) : (
               <p className="empty-state">No notes yet. Capture a takeaway or write one while you learn.</p>
             )}

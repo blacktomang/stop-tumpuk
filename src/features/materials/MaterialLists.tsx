@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { effortSeconds, formatDuration } from '../../domain';
-import type { Material } from '../../types';
+import type { Material, MaterialStatus } from '../../types';
 
 interface MaterialListsProps {
   materials: Material[];
@@ -10,14 +11,47 @@ interface MaterialListsProps {
 }
 
 export function MaterialLists({ materials, onEdit, onNotes, onMove, onDelete }: MaterialListsProps) {
-  const inbox = materials.filter((material) => material.status === 'inbox');
-  const queue = materials.filter(
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState<MaterialStatus | 'all'>('all');
+  const visible = materials.filter((material) => {
+    const matchesQuery = [material.title, material.domain, material.originalUrl]
+      .join(' ')
+      .toLocaleLowerCase()
+      .includes(query.trim().toLocaleLowerCase());
+    return matchesQuery && (status === 'all' || material.status === status);
+  });
+  const inbox = visible.filter((material) => material.status === 'inbox');
+  const queue = visible.filter(
     (material) => material.status === 'queued' || material.status === 'in-progress',
   );
-  const archived = materials.filter((material) => material.status === 'archived');
-  const completed = materials.filter((material) => material.status === 'completed');
+  const archived = visible.filter((material) => material.status === 'archived');
+  const completed = visible.filter((material) => material.status === 'completed');
   return (
     <>
+      <section aria-label="Search and filter materials" className="material-filters">
+        <label className="sr-only" htmlFor="material-search">
+          Search materials
+        </label>
+        <input
+          id="material-search"
+          className="material-search"
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search titles, domains, or URLs"
+        />
+        <div className="filter-buttons" aria-label="Filter by status">
+          {(['all', 'inbox', 'queued', 'in-progress', 'completed', 'archived'] as const).map((option) => (
+            <button
+              key={option}
+              className={status === option ? 'filter-button filter-button--active' : 'filter-button'}
+              onClick={() => setStatus(option)}
+            >
+              {option === 'all' ? 'All' : option.replace('-', ' ')}
+            </button>
+          ))}
+        </div>
+      </section>
       <section aria-label="Your saved materials" className="workspace-grid">
         <MaterialList
           title="Learning queue"
