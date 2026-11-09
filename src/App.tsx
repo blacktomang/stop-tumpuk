@@ -8,6 +8,7 @@ import { CommitmentDashboard } from './features/dashboard/CommitmentDashboard';
 import { EditMaterialDialog } from './features/materials/EditMaterialDialog';
 import { MaterialLists } from './features/materials/MaterialLists';
 import { LearningWorkspace } from './features/learning/LearningWorkspace';
+import { DataDialog } from './features/data/DataDialog';
 import { NotesDialog } from './features/notes/NotesDialog';
 import { AvailabilityDialog } from './features/settings/AvailabilityDialog';
 import { useMaterials } from './repositories/material-repository';
@@ -19,6 +20,7 @@ export default function App() {
   const settings = useSettings();
   const [editing, setEditing] = useState<Material | null>(null);
   const [notesFor, setNotesFor] = useState<Material | null>(null);
+  const [dataDialog, setDataDialog] = useState(false);
   const [onboarding, setOnboarding] = useState(false);
   const [intakeUrl, setIntakeUrl] = useState<string | null>(null);
   const [operationError, setOperationError] = useState('');
@@ -109,6 +111,9 @@ export default function App() {
             <button className="nav-link nav-link--action" onClick={() => setOnboarding(true)}>
               Set time
             </button>
+            <button className="nav-link" onClick={() => setDataDialog(true)}>
+              Data
+            </button>
           </nav>
         </div>
       </header>
@@ -149,6 +154,7 @@ export default function App() {
         onClose={() => setEditing(null)}
       />
       <NotesDialog material={notesFor} onClose={() => setNotesFor(null)} />
+      <DataDialog open={dataDialog} onClose={() => setDataDialog(false)} />
       <AvailabilityDialog
         open={onboarding}
         settings={settings}
