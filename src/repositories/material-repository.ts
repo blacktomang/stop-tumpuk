@@ -46,11 +46,21 @@ export async function changeMaterialStatus(material: Material, status: MaterialS
   const at = new Date().toISOString();
   await db.transaction('rw', db.materials, db.events, async () => {
     await db.materials.update(material.id, { status, updatedAt: at });
-    if (status === 'queued' || status === 'archived') {
+    const eventType =
+      status === 'completed'
+        ? 'completed'
+        : status === 'in-progress'
+          ? 'in-progress'
+          : material.status === 'completed' && (status === 'queued' || status === 'inbox')
+            ? 'reopened'
+            : status === 'queued' || status === 'archived'
+              ? status
+              : null;
+    if (eventType) {
       await db.events.add({
         id: crypto.randomUUID(),
         materialId: material.id,
-        type: status,
+        type: eventType,
         at,
       });
     }
@@ -58,8 +68,10 @@ export async function changeMaterialStatus(material: Material, status: MaterialS
 }
 
 export async function deleteMaterial(material: Material): Promise<void> {
-  await db.transaction('rw', db.materials, db.events, async () => {
+  await db.transaction('rw', db.materials, db.events, db.notes, db.sessions, async () => {
     await db.materials.delete(material.id);
     await db.events.where('materialId').equals(material.id).delete();
+    await db.notes.where('materialId').equals(material.id).delete();
+    await db.sessions.where('materialId').equals(material.id).delete();
   });
 }

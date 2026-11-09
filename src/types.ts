@@ -34,8 +34,25 @@ export interface Settings {
 export interface MaterialEvent {
   id: string;
   materialId: string;
-  type: 'captured' | 'queued' | 'archived' | 'deleted';
+  type: 'captured' | 'queued' | 'in-progress' | 'completed' | 'reopened' | 'archived' | 'deleted';
   at: string;
+}
+export interface Note {
+  id: string;
+  materialId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+export type SessionState = 'running' | 'paused' | 'ended';
+export interface LearningSession {
+  id: string;
+  materialId: string;
+  startedAt: string;
+  elapsedSeconds: number;
+  state: SessionState;
+  stateChangedAt: string;
+  endedAt: string | null;
 }
 export interface CaptureIntake {
   id: string;

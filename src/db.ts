@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { CaptureIntake, Material, MaterialEvent, Settings } from './types';
+import type { CaptureIntake, LearningSession, Material, MaterialEvent, Note, Settings } from './types';
 
 const databaseName = 'stop-tumpuk';
 
@@ -17,6 +17,8 @@ export class CommitmentDb extends Dexie {
   materials!: Table<Material, string>;
   settings!: Table<Settings, 'settings'>;
   events!: Table<MaterialEvent, string>;
+  notes!: Table<Note, string>;
+  sessions!: Table<LearningSession, string>;
   captureIntake!: Table<CaptureIntake, string>;
   constructor() {
     super(databaseName);
@@ -46,6 +48,14 @@ export class CommitmentDb extends Dexie {
           });
         }
       });
+    this.version(4).stores({
+      materials: 'id, normalizedUrl, status, updatedAt',
+      settings: 'id',
+      events: 'id, materialId, type, at',
+      captureIntake: 'id, receivedAt',
+      notes: 'id, materialId, updatedAt',
+      sessions: 'id, materialId, stateChangedAt',
+    });
   }
 }
 export const db = new CommitmentDb();
