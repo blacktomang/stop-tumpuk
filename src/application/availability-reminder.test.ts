@@ -25,4 +25,13 @@ describe('availability reminders', () => {
       ),
     ).toBe(false);
   });
+
+  it('does not prompt again after the availability dialog is saved', () => {
+    expect(
+      shouldPromptForAvailability(
+        { ...emptySettings, onboardingDismissed: true, availabilityReminderAt: null },
+        new Date('2030-01-01T00:00:00.000Z'),
+      ),
+    ).toBe(false);
+  });
 });

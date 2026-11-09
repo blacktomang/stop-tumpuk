@@ -24,10 +24,12 @@ export default function App() {
   const [onboarding, setOnboarding] = useState(false);
   const [intakeUrl, setIntakeUrl] = useState<string | null>(null);
   const [operationError, setOperationError] = useState('');
+  const shouldPromptAvailability = shouldPromptForAvailability(settings);
 
   useEffect(() => {
-    if (shouldPromptForAvailability(settings)) setOnboarding(true);
-  }, [settings]);
+    setOnboarding(shouldPromptAvailability);
+  }, [shouldPromptAvailability]);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const shareError = params.get('shareError');
@@ -78,7 +80,7 @@ export default function App() {
 
   async function saveAvailability(next: typeof settings) {
     try {
-      await saveSettings({ ...next, onboardingDismissed: false, availabilityReminderAt: null });
+      await saveSettings({ ...next, onboardingDismissed: true, availabilityReminderAt: null });
       setOnboarding(false);
     } catch {
       setOperationError('Your availability preference was not saved. Please try again.');
