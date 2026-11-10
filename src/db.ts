@@ -1,9 +1,9 @@
 import Dexie, { type Table } from 'dexie';
+import { databaseName, databaseSchemaVersion } from './db-identity';
 import type { CaptureIntake, LearningSession, Material, MaterialEvent, Note, Settings } from './types';
 
 /** The one-time Milestone 1 replacement identity; do not change after first release. */
-export const databaseName = 'stop-tumpuk-reading-plan-v1';
-export const databaseSchemaVersion = 1;
+export { databaseName, databaseSchemaVersion } from './db-identity';
 
 export class CommitmentDb extends Dexie {
   materials!: Table<Material, string>;

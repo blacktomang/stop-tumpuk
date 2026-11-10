@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { databaseName } from './db-identity';
 
 declare let self: ServiceWorkerGlobalScope;
 const sharedUrl = (value: string) => value.match(/https?:\/\/[^\s<>()]+/iu)?.[0] ?? null;
@@ -24,7 +25,9 @@ self.addEventListener('fetch', (event) => {
       const title = String(data.get('title') || '');
       const intakeId = crypto.randomUUID();
       await new Promise<void>((resolve, reject) => {
-        const open = indexedDB.open('stop-tumpuk-reading-plan-v1', 1);
+        // Do not request a native IndexedDB version here. Dexie maps its logical
+        // version independently; reopening the current database avoids downgrades.
+        const open = indexedDB.open(databaseName);
         open.onupgradeneeded = () => {
           const database = open.result;
           const materials = database.objectStoreNames.contains('materials')
