@@ -100,22 +100,36 @@ export default function App() {
     }
   }
 
-  const navigationItems = (
-    <>
-      <a className="nav-link" href="#queue">
-        Reading plan
-      </a>
-      <a className="nav-link" href="#inbox">
-        Inbox
-      </a>
-      <button className="nav-link nav-link--action" onClick={() => setOnboarding(true)}>
-        Set time
-      </button>
-      <button className="nav-link" onClick={() => setDataDialog(true)}>
-        Data
-      </button>
-    </>
-  );
+  function openFromMobileMenu(action: () => void, closeMenu?: () => void) {
+    if (!closeMenu) {
+      action();
+      return;
+    }
+    closeMenu();
+    window.setTimeout(action, 0);
+  }
+
+  function navigationItems(closeMenu?: () => void) {
+    return (
+      <>
+        <a className="nav-link" href="#reading-plan" onClick={() => closeMenu?.()}>
+          Reading plan
+        </a>
+        <a className="nav-link" href="#inbox" onClick={() => closeMenu?.()}>
+          Inbox
+        </a>
+        <button
+          className="nav-link nav-link--action"
+          onClick={() => openFromMobileMenu(() => setOnboarding(true), closeMenu)}
+        >
+          Set time
+        </button>
+        <button className="nav-link" onClick={() => openFromMobileMenu(() => setDataDialog(true), closeMenu)}>
+          Data
+        </button>
+      </>
+    );
+  }
 
   return (
     <main className="app-shell">
@@ -134,7 +148,7 @@ export default function App() {
             </div>
           </div>
           <nav aria-label="stop-tumpuk navigation" className="app-nav hidden md:flex">
-            {navigationItems}
+            {navigationItems()}
           </nav>
           <Popover className="relative shrink-0 md:hidden">
             {({ open, close }) => (
@@ -153,9 +167,8 @@ export default function App() {
                   <nav
                     aria-label="stop-tumpuk navigation"
                     className="flex flex-col gap-1 text-sm font-medium [&>.nav-link]:min-h-11 [&>.nav-link]:text-left"
-                    onClick={() => close()}
                   >
-                    {navigationItems}
+                    {navigationItems(close)}
                   </nav>
                 </PopoverPanel>
               </>

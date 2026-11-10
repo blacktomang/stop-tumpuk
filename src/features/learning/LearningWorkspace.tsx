@@ -57,7 +57,7 @@ export function LearningWorkspace({ materials, onInProgress, onComplete, onNotes
       await onInProgress(material);
       setSelected({ ...material, status: 'in-progress' });
     } catch {
-      setError('Your learning session could not be started. Please try again.');
+      setError('Your reading session could not be started. Please try again.');
     }
   }
 
@@ -141,9 +141,7 @@ function RecommendationList({
   onChoose: (material: Material) => void;
 }) {
   if (!materials.length)
-    return (
-      <p className="empty-state">Your Reading plan is clear. Commit an Inbox item when you are ready.</p>
-    );
+    return <p className="empty-state">Your Reading plan is clear. Add an Inbox item when you are ready.</p>;
   return (
     <div className="recommendation-panel">
       {primary ? (
@@ -225,7 +223,7 @@ function LearningView({
       await onComplete(material);
       onFinished();
     } catch {
-      setError('Completion was not saved. Please try again.');
+      setError('Finishing was not saved. Please try again.');
     }
   }
   const inProgress = material.status === 'in-progress';
@@ -239,7 +237,7 @@ function LearningView({
           <p className="section-kicker">Reading</p>
           <h3 className="modal-title">{material.title}</h3>
           <p className="modal-copy">
-            {formatDuration(estimatedSeconds(material))} estimated time · {material.domain}
+            {formatDuration(estimatedSeconds(material))} Estimated time · {material.domain}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

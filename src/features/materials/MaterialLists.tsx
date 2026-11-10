@@ -101,7 +101,7 @@ function MaterialList({
   empty: string;
 }) {
   const isInbox = title === 'Inbox';
-  const sectionId = isInbox ? 'inbox' : 'queue';
+  const sectionId = isInbox ? 'inbox' : 'reading-plan';
   return (
     <section id={sectionId} className="list-panel scroll-mt-24">
       <div className="list-panel__head">

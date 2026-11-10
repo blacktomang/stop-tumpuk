@@ -2,7 +2,7 @@
 
 **Version:** 2.1
 
-**Status:** Milestones 1, 2 and 3 verified November 10, 2026; and Milestones 4–5 remain unverified
+**Status:** Milestones 1–4 verified November 10, 2026; Milestone 5 and release checks remain unverified
 
 **Product authority:** [PRD.md](PRD.md) v2.1
 
@@ -63,13 +63,13 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** FR-08, FR-10, FR-12.
 
-- [ ] Apply primary-action plus Advanced actions grouping to Inbox and Reading-plan rows; retain edit, notes, return, archive, and delete access as appropriate.
-- [ ] Simplify reading-session actions according to context while keeping Back and running timer controls directly reachable; hiding optional controls must not interrupt timer lifecycle handling.
-- [ ] Replace the six status-filter buttons with one labeled dropdown and retain search/filter behavior.
-- [ ] Keep New note prominent and move each note's Edit/Delete into an item menu; preserve existing multiple-notes-per-material support. Verify adding two notes to one material, independent editing/deletion, search, and access after finishing; retain deletion confirmation.
-- [ ] Separate the import-preview step from export controls without removing validation, conflict counts, Cancel, or the ability to close.
-- [ ] Apply the FR-12 terminology throughout capture, dashboard, reading, material lists, dialogs, errors, empty states, and accessibility labels. Update internal identifiers consistently if needed; no legacy mapping is required.
-- [ ] Preserve the existing closable mobile header menu; verify menu-to-dialog focus transfer, Escape/outside dismissal, keyboard selection, touch targets, and clipping at mobile/desktop widths.
+- [x] Apply primary-action plus Advanced actions grouping to Inbox and Reading-plan rows; retain edit, notes, return, archive, and delete access as appropriate.
+- [x] Simplify reading-session actions according to context while keeping Back and running timer controls directly reachable; hiding optional controls must not interrupt timer lifecycle handling.
+- [x] Replace the six status-filter buttons with one labeled dropdown and retain search/filter behavior.
+- [x] Keep New note prominent and move each note's Edit/Delete into an item menu; preserve existing multiple-notes-per-material support. Verify adding two notes to one material, independent editing/deletion, search, and access after finishing; retain deletion confirmation.
+- [x] Separate the import-preview step from export controls without removing validation, conflict counts, Cancel, or the ability to close.
+- [x] Apply the FR-12 terminology throughout capture, dashboard, reading, material lists, dialogs, errors, empty states, and accessibility labels. Update internal identifiers consistently if needed; no legacy mapping is required.
+- [x] Preserve the existing closable mobile header menu; verify menu-to-dialog focus transfer, Escape/outside dismissal, keyboard selection, touch targets, and clipping at mobile/desktop widths.
 
 **Acceptance gate:** Each affected task has an evident main action, all secondary actions remain reachable, and smaller action groups do not acquire unnecessary nesting. Run type checking and focused browser interaction checks; inspect the changed responsive layouts.
 

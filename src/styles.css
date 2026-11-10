@@ -206,12 +206,8 @@ textarea:focus-visible {
   .learning-view {
     @apply space-y-5 rounded-2xl border border-[var(--line)] bg-[var(--surface-soft)] p-5;
   }
-  .learning-view__head,
-  .learning-view__complete {
+  .learning-view__head {
     @apply flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
-  }
-  .learning-view__complete {
-    @apply rounded-xl bg-white p-4;
   }
   .focus-timer {
     @apply flex flex-col gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 sm:flex-row sm:items-center sm:justify-between;
@@ -236,15 +232,6 @@ textarea:focus-visible {
   }
   .material-search {
     @apply w-full rounded-xl border border-[var(--line)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-300/30;
-  }
-  .filter-buttons {
-    @apply mt-3 flex flex-wrap gap-2;
-  }
-  .filter-button {
-    @apply min-h-8 rounded-full border border-[var(--line)] bg-white px-3 text-xs font-semibold capitalize text-[var(--muted)] transition hover:border-emerald-300 hover:text-emerald-900;
-  }
-  .filter-button--active {
-    @apply border-emerald-700 bg-emerald-800 text-white hover:bg-emerald-900 hover:text-white;
   }
   .list-panel,
   .archive-panel {

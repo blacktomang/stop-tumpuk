@@ -71,6 +71,7 @@ export function EditMaterialDialog({
                   className={field}
                   type="url"
                   required
+                  autoFocus
                   value={sourceUrl}
                   onChange={(event) => {
                     setSourceUrl(event.target.value);

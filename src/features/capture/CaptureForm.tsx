@@ -33,7 +33,7 @@ export function CaptureForm({ intake, onIntakeSaved }: CaptureFormProps) {
       if (intake) onIntakeSaved();
       setMessage(
         result.material.status === 'queued'
-          ? 'Saved to your Reading plan. Add an estimate when you are ready.'
+          ? 'Saved to your Reading plan. Set an Estimated time when you are ready.'
           : 'Saved to Inbox. It is not part of your Reading plan yet.',
       );
     } catch (error) {
@@ -47,8 +47,8 @@ export function CaptureForm({ intake, onIntakeSaved }: CaptureFormProps) {
         Save the link. Choose where it belongs.
       </h2>
       <p className="capture-panel__copy">
-        Reading plan is selected by default and adds an item to your estimated reading time. Choose Inbox for
-        a link you want to review later.
+        Reading plan is selected by default and adds an item to your Estimated time. Choose Inbox for a link
+        you want to review later.
       </p>
       <form onSubmit={capture} className="capture-form">
         <label className="sr-only" htmlFor="url">
