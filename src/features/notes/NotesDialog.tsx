@@ -1,4 +1,4 @@
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { useEffect, useState } from 'react';
 import { createNote, deleteNote, updateNote, useNotes } from '../../repositories/note-repository';
 import { field } from '../../shared/ui/classes';
@@ -130,14 +130,7 @@ export function NotesDialog({ material, onClose }: { material: Material | null; 
                         <p className="whitespace-pre-wrap text-sm leading-6 text-(--ink)">{note.content}</p>
                         <div className="mt-3 flex items-center justify-between gap-3 text-xs text-(--muted)">
                           <span>Updated {new Date(note.updatedAt).toLocaleDateString()}</span>
-                          <span className="flex gap-2">
-                            <button className="action" onClick={() => startEditing(note)}>
-                              Edit
-                            </button>
-                            <button className="action-danger" onClick={() => void remove(note)}>
-                              Delete
-                            </button>
-                          </span>
+                          <NoteActions note={note} onEdit={startEditing} onDelete={remove} />
                         </div>
                       </article>
                     ))}
@@ -147,7 +140,7 @@ export function NotesDialog({ material, onClose }: { material: Material | null; 
                 )}
               </>
             ) : (
-              <p className="empty-state">No notes yet. Capture a takeaway or write one while you learn.</p>
+              <p className="empty-state">No notes yet. Write one while you read or after you finish.</p>
             )}
             {!editing && (
               <div className="mt-5 flex justify-end">
@@ -160,5 +153,47 @@ export function NotesDialog({ material, onClose }: { material: Material | null; 
         </div>
       </div>
     </Dialog>
+  );
+}
+
+function NoteActions({
+  note,
+  onEdit,
+  onDelete,
+}: {
+  note: Note;
+  onEdit: (note: Note) => void;
+  onDelete: (note: Note) => Promise<void>;
+}) {
+  const itemClass =
+    'block w-full px-3 py-2.5 text-left text-sm text-(--ink) data-focus:bg-(--surface-soft) data-focus:outline-none';
+  return (
+    <Menu>
+      <MenuButton className="action" aria-label="Note actions">
+        Actions
+      </MenuButton>
+      <MenuItems
+        anchor="bottom end"
+        className="z-30 mt-2 w-36 origin-top-right rounded-xl border border-(--line) bg-(--surface) p-1 shadow-lg outline-none"
+      >
+        <MenuItem>
+          {({ close }) => (
+            <button className={itemClass} onClick={() => (close(), onEdit(note))}>
+              Edit
+            </button>
+          )}
+        </MenuItem>
+        <MenuItem>
+          {({ close }) => (
+            <button
+              className={`${itemClass} text-rose-700 data-focus:bg-rose-50`}
+              onClick={() => (close(), void onDelete(note))}
+            >
+              Delete
+            </button>
+          )}
+        </MenuItem>
+      </MenuItems>
+    </Menu>
   );
 }
