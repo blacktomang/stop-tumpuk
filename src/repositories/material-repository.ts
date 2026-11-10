@@ -62,13 +62,16 @@ export async function updateMaterialDraft(
 export async function changeMaterialStatus(material: Material, status: MaterialStatus): Promise<void> {
   const at = new Date().toISOString();
   await db.transaction('rw', db.materials, db.events, async () => {
-    await db.materials.update(material.id, { status, updatedAt: at });
+    const current = await db.materials.get(material.id);
+    if (!current) throw new Error('This material no longer exists.');
+    if (current.status === status) return;
+    await db.materials.update(current.id, { status, updatedAt: at });
     const eventType =
       status === 'completed'
         ? 'completed'
         : status === 'in-progress'
           ? 'in-progress'
-          : material.status === 'completed' && (status === 'queued' || status === 'inbox')
+          : current.status === 'completed' && (status === 'queued' || status === 'inbox')
             ? 'reopened'
             : status === 'queued' || status === 'archived'
               ? status

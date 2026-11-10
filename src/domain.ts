@@ -49,6 +49,97 @@ export function backlog(materials: Material[], weekday: number | null, weekend: 
   };
 }
 
+export type CapacityState = 'unset' | 'zero' | 'empty' | 'under' | 'full' | 'overflow';
+
+/**
+ * The dashboard's single source of truth. `visualFraction` is intentionally
+ * clamped for the meter; `plannedSeconds` and `overflowSeconds` retain the
+ * true values for the text equivalent.
+ */
+export interface CapacityViewModel {
+  state: CapacityState;
+  activeCount: number;
+  plannedSeconds: number;
+  unknownCount: number;
+  capacitySeconds: number | null;
+  visualFraction: number | null;
+  headroomSeconds: number | null;
+  overflowSeconds: number | null;
+  clearanceWeeks: number | null;
+}
+
+export function capacityViewModel(
+  materials: Material[],
+  weekday: number | null,
+  weekend: number | null,
+): CapacityViewModel {
+  const summary = backlog(materials, weekday, weekend);
+  const base = {
+    activeCount: summary.active,
+    plannedSeconds: summary.known,
+    unknownCount: summary.unknown,
+    capacitySeconds: summary.capacity,
+  };
+  if (summary.capacity === null) {
+    return {
+      ...base,
+      state: 'unset',
+      visualFraction: null,
+      headroomSeconds: null,
+      overflowSeconds: null,
+      clearanceWeeks: null,
+    };
+  }
+  if (summary.capacity === 0) {
+    return {
+      ...base,
+      state: 'zero',
+      visualFraction: null,
+      headroomSeconds: null,
+      overflowSeconds: summary.known,
+      clearanceWeeks: null,
+    };
+  }
+  if (summary.active === 0) {
+    return {
+      ...base,
+      state: 'empty',
+      visualFraction: 0,
+      headroomSeconds: summary.capacity,
+      overflowSeconds: null,
+      clearanceWeeks: 0,
+    };
+  }
+  if (summary.known > summary.capacity) {
+    return {
+      ...base,
+      state: 'overflow',
+      visualFraction: 1,
+      headroomSeconds: null,
+      overflowSeconds: summary.known - summary.capacity,
+      clearanceWeeks: summary.known / summary.capacity,
+    };
+  }
+  if (summary.known === summary.capacity) {
+    return {
+      ...base,
+      state: 'full',
+      visualFraction: 1,
+      headroomSeconds: 0,
+      overflowSeconds: null,
+      clearanceWeeks: 1,
+    };
+  }
+  return {
+    ...base,
+    state: 'under',
+    visualFraction: summary.known / summary.capacity,
+    headroomSeconds: summary.capacity - summary.known,
+    overflowSeconds: null,
+    clearanceWeeks: summary.known / summary.capacity,
+  };
+}
+
 export function classifyUrl(raw: string): { url: URL; type: MaterialType; source: DurationProvenance } {
   const url = new URL(raw);
   if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Use a valid HTTP(S) link.');
@@ -81,8 +172,9 @@ export function inferredTitle(url: URL) {
 }
 
 export interface RecommendationResult {
-  fitting: Material[];
+  primary: Material | null;
   partial: Material | null;
+  manual: Material[];
 }
 
 export function recommendMaterials(materials: Material[], availableSeconds: number): RecommendationResult {
@@ -100,7 +192,14 @@ export function recommendMaterials(materials: Material[], availableSeconds: numb
       left.material.id.localeCompare(right.material.id),
   );
   return {
-    fitting: ordered.filter((entry) => entry.estimate <= availableSeconds).map((entry) => entry.material),
-    partial: ordered.find((entry) => entry.estimate > availableSeconds)?.material ?? null,
+    primary: ordered.find((entry) => entry.estimate <= availableSeconds)?.material ?? null,
+    partial:
+      ordered.find((entry) => entry.estimate <= availableSeconds) === undefined
+        ? (ordered.find((entry) => entry.estimate > availableSeconds)?.material ?? null)
+        : null,
+    manual: [
+      ...ordered.map((entry) => entry.material),
+      ...active.filter((material) => estimatedSeconds(material) === null),
+    ],
   };
 }

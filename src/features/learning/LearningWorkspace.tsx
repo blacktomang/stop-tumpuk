@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { estimatedSeconds, formatDuration, recommendMaterials } from '../../domain';
-import { createNote } from '../../repositories/note-repository';
 import {
   endSession,
   pauseSession,
@@ -57,11 +56,11 @@ export function LearningWorkspace({ materials, onInProgress, onComplete, onNotes
     <section aria-labelledby="learn-title" className="learning-section">
       <div className="learning-section__heading">
         <div>
-          <p className="section-kicker">Make the next session count</p>
+          <p className="section-kicker">Read next</p>
           <h2 id="learn-title" className="section-title">
             What fits right now?
           </h2>
-          <p className="section-copy">Recommendations use your estimated learning effort, not raw runtime.</p>
+          <p className="section-copy">Recommendations use your Estimated time.</p>
         </div>
       </div>
       <div className="budget-controls" aria-label="Time available now">
@@ -103,13 +102,15 @@ export function LearningWorkspace({ materials, onInProgress, onComplete, onNotes
           onBack={() => setSelected(null)}
           onBegin={() => begin(selected)}
           onComplete={onComplete}
+          onFinished={() => setSelected(null)}
           onNotes={onNotes}
         />
       ) : (
         <RecommendationList
           materials={active}
-          fitting={recommendation.fitting}
+          primary={recommendation.primary}
           partial={recommendation.partial}
+          manual={recommendation.manual}
           onChoose={setSelected}
         />
       )}
@@ -119,28 +120,32 @@ export function LearningWorkspace({ materials, onInProgress, onComplete, onNotes
 
 function RecommendationList({
   materials,
-  fitting,
+  primary,
   partial,
+  manual,
   onChoose,
 }: {
   materials: Material[];
-  fitting: Material[];
+  primary: Material | null;
   partial: Material | null;
+  manual: Material[];
   onChoose: (material: Material) => void;
 }) {
   if (!materials.length)
-    return <p className="empty-state">Commit an Inbox item to choose your next learning session.</p>;
+    return (
+      <p className="empty-state">Your Reading plan is clear. Commit an Inbox item when you are ready.</p>
+    );
   return (
     <div className="recommendation-panel">
-      {fitting.length ? (
+      {primary ? (
         <>
-          <p className="recommendation-panel__label">Fits your time</p>
-          {fitting.slice(0, 3).map((material) => (
-            <RecommendationRow key={material.id} material={material} onChoose={onChoose} />
-          ))}
+          <p className="recommendation-panel__label">Read next · fits your time</p>
+          <RecommendationRow material={primary} onChoose={onChoose} actionLabel="Open" />
         </>
       ) : (
-        <p className="recommendation-panel__copy">Nothing estimated fits this window.</p>
+        <p className="recommendation-panel__copy">
+          Nothing with an Estimated time fits this window. Items without estimates are never claimed to fit.
+        </p>
       )}
       {partial && (
         <div className="partial-option">
@@ -156,9 +161,9 @@ function RecommendationList({
         </div>
       )}
       <details className="manual-choice">
-        <summary>Choose another material manually</summary>
+        <summary>Choose another</summary>
         <div className="manual-choice__list">
-          {materials.map((material) => (
+          {manual.map((material) => (
             <RecommendationRow key={material.id} material={material} onChoose={onChoose} />
           ))}
         </div>
@@ -170,18 +175,20 @@ function RecommendationList({
 function RecommendationRow({
   material,
   onChoose,
+  actionLabel = 'Select',
 }: {
   material: Material;
   onChoose: (material: Material) => void;
+  actionLabel?: string;
 }) {
   return (
     <div className="recommendation-row">
       <div className="min-w-0">
         <p className="truncate font-semibold text-(--ink)">{material.title}</p>
-        <p className="text-sm text-(--muted)">{formatDuration(estimatedSeconds(material))} estimated time</p>
+        <p className="text-sm text-(--muted)">{formatDuration(estimatedSeconds(material))} Estimated time</p>
       </div>
       <button className="action" onClick={() => onChoose(material)}>
-        Select
+        {actionLabel}
       </button>
     </div>
   );
@@ -192,21 +199,22 @@ function LearningView({
   onBack,
   onBegin,
   onComplete,
+  onFinished,
   onNotes,
 }: {
   material: Material;
   onBack: () => void;
   onBegin: () => Promise<void>;
   onComplete: (material: Material) => Promise<void>;
+  onFinished: () => void;
   onNotes: (material: Material) => void;
 }) {
-  const [showCompletion, setShowCompletion] = useState(false);
   const [error, setError] = useState('');
   async function complete() {
     try {
       setError('');
       await onComplete(material);
-      setShowCompletion(true);
+      onFinished();
     } catch {
       setError('Completion was not saved. Please try again.');
     }
@@ -218,7 +226,7 @@ function LearningView({
       </button>
       <div className="learning-view__head">
         <div>
-          <p className="section-kicker">Learning session</p>
+          <p className="section-kicker">Reading session</p>
           <h3 className="modal-title">{material.title}</h3>
           <p className="modal-copy">
             {formatDuration(estimatedSeconds(material))} estimated time · {material.domain}
@@ -245,13 +253,12 @@ function LearningView({
       <div className="learning-view__complete">
         <div>
           <p className="font-semibold text-(--ink)">Finished with this material?</p>
-          <p className="text-sm text-(--muted)">Only this button marks it complete. A timer never does.</p>
+          <p className="text-sm text-(--muted)">Only this button marks it Finished. A timer never does.</p>
         </div>
         <button className="primary-button" onClick={() => void complete()}>
-          Complete
+          Finish
         </button>
       </div>
-      {showCompletion && <TakeawayPrompt material={material} onClose={onBack} />}
     </div>
   );
 }
@@ -324,63 +331,6 @@ function FocusTimer({ material, onBegin }: { material: Material; onBegin: () => 
           {error}
         </p>
       )}
-    </div>
-  );
-}
-
-function TakeawayPrompt({ material, onClose }: { material: Material; onClose: () => void }) {
-  const [content, setContent] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  async function save() {
-    if (!content.trim()) return onClose();
-    try {
-      setSaving(true);
-      setError('');
-      await createNote(material.id, content);
-      onClose();
-    } catch {
-      setError('Your completion is saved, but the takeaway was not. Please retry or skip it.');
-    } finally {
-      setSaving(false);
-    }
-  }
-  return (
-    <div className="dialog-backdrop" role="presentation">
-      <section
-        aria-modal="true"
-        role="dialog"
-        aria-labelledby="takeaway-title"
-        className="modal-panel max-w-lg"
-      >
-        <p className="section-kicker">Nice work</p>
-        <h3 id="takeaway-title" className="modal-title">
-          Save a takeaway?
-        </h3>
-        <p className="modal-copy">
-          Optional and kept with this source. You can skip it without changing completion.
-        </p>
-        <textarea
-          className="takeaway-input"
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          placeholder="What do you want to remember?"
-          rows={4}
-        />
-        {error && (
-          <p role="alert" className="mt-3 text-sm text-rose-700">
-            {error}
-          </p>
-        )}
-        <div className="mt-5 flex justify-end gap-3">
-          <button className="action" onClick={onClose}>
-            Skip
-          </button>
-          <button className="primary-button" disabled={saving} onClick={() => void save()}>
-            {saving ? 'Saving…' : 'Save takeaway'}
-          </button>
-        </div>
-      </section>
     </div>
   );
 }

@@ -160,7 +160,7 @@ function Completed({
   return (
     <section className="archive-panel">
       <div className="mb-4">
-        <h2 className="list-panel__title">Completed</h2>
+        <h2 className="list-panel__title">Finished</h2>
         <p className="list-panel__copy">
           Deliberately finished materials. Reopen one if you want to return to it.
         </p>
