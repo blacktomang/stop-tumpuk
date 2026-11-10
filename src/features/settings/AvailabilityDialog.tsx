@@ -45,7 +45,7 @@ export function AvailabilityDialog({ open, settings, onClose, onSave }: Availabi
                 <span className="flex items-center gap-1.5 text-sm font-medium">
                   Plan weekly learning time
                   <InfoTip>
-                    Optional. It lets stop-tumpuk show whether your learning queue fits your week.
+                    Optional. It lets stop-tumpuk show whether your Reading plan fits your week.
                   </InfoTip>
                 </span>
                 <Switch

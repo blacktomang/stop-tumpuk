@@ -1,3 +1,4 @@
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { useState } from 'react';
 import { estimateLabel, estimatedSeconds, formatDuration } from '../../domain';
 import type { Material, MaterialStatus } from '../../types';
@@ -40,23 +41,31 @@ export function MaterialLists({ materials, onEdit, onNotes, onMove, onDelete }: 
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search titles, domains, or URLs"
         />
-        <div className="filter-buttons" aria-label="Filter by status">
-          {(['all', 'inbox', 'queued', 'in-progress', 'completed', 'archived'] as const).map((option) => (
-            <button
-              key={option}
-              className={status === option ? 'filter-button filter-button--active' : 'filter-button'}
-              onClick={() => setStatus(option)}
-            >
-              {option === 'all' ? 'All' : option.replace('-', ' ')}
-            </button>
-          ))}
-        </div>
+        <label
+          className="mt-3 flex items-center gap-3 text-sm font-semibold text-(--ink)"
+          htmlFor="status-filter"
+        >
+          Status
+          <select
+            id="status-filter"
+            className="min-h-10 rounded-lg border border-(--line) bg-white px-3 text-sm font-medium text-(--ink)"
+            value={status}
+            onChange={(event) => setStatus(event.target.value as MaterialStatus | 'all')}
+          >
+            <option value="all">All statuses</option>
+            <option value="inbox">Inbox</option>
+            <option value="queued">Reading plan</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Finished</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
       </section>
       <section aria-label="Your saved materials" className="workspace-grid">
         <MaterialList
-          title="Learning queue"
+          title="Reading plan"
           materials={queue}
-          empty="Commit a few Inbox items when they are worth your time."
+          empty="Add an Inbox item when it is worth making time for."
           onEdit={onEdit}
           onNotes={onNotes}
           onMove={onMove}
@@ -91,14 +100,15 @@ function MaterialList({
   materials: Material[];
   empty: string;
 }) {
-  const sectionId = title === 'Inbox' ? 'inbox' : 'queue';
+  const isInbox = title === 'Inbox';
+  const sectionId = isInbox ? 'inbox' : 'queue';
   return (
     <section id={sectionId} className="list-panel scroll-mt-24">
       <div className="list-panel__head">
         <div>
           <h2 className="list-panel__title">{title}</h2>
           <p className="list-panel__copy">
-            {title === 'Inbox'
+            {isInbox
               ? 'Saved links that are not a commitment yet.'
               : 'Items you have chosen to make time for.'}
           </p>
@@ -123,24 +133,31 @@ function MaterialList({
                 </div>
               </div>
               <div className="material-actions">
-                <button className="action" onClick={() => onEdit(material)}>
-                  Edit estimate
-                </button>
-                <button className="action" onClick={() => onNotes(material)}>
-                  Notes
-                </button>
-                <button
-                  className="action"
-                  onClick={() => onMove(material, title === 'Inbox' ? 'queued' : 'inbox')}
-                >
-                  {title === 'Inbox' ? 'Commit' : 'Return to Inbox'}
-                </button>
-                <button className="action" onClick={() => onMove(material, 'archived')}>
-                  Archive
-                </button>
-                <button className="action-danger" onClick={() => onDelete(material)}>
-                  Delete
-                </button>
+                {isInbox ? (
+                  <button
+                    className="primary-button min-h-9 px-3 py-1.5 text-xs"
+                    onClick={() => onMove(material, 'queued')}
+                  >
+                    Add to Reading plan
+                  </button>
+                ) : (
+                  <a
+                    className="primary-button min-h-9 px-3 py-1.5 text-xs"
+                    href={material.originalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open source
+                  </a>
+                )}
+                <AdvancedActions
+                  material={material}
+                  isInbox={isInbox}
+                  onEdit={onEdit}
+                  onNotes={onNotes}
+                  onMove={onMove}
+                  onDelete={onDelete}
+                />
               </div>
             </article>
           ))
@@ -149,6 +166,70 @@ function MaterialList({
         )}
       </div>
     </section>
+  );
+}
+
+function AdvancedActions({
+  material,
+  isInbox,
+  onEdit,
+  onNotes,
+  onMove,
+  onDelete,
+}: Omit<MaterialListsProps, 'materials'> & { material: Material; isInbox: boolean }) {
+  const itemClass =
+    'block w-full px-3 py-2.5 text-left text-sm text-(--ink) data-focus:bg-(--surface-soft) data-focus:outline-none';
+  return (
+    <Menu>
+      <MenuButton className="action" aria-label={`Advanced actions for ${material.title}`}>
+        Advanced actions
+      </MenuButton>
+      <MenuItems
+        anchor="bottom end"
+        className="z-30 mt-2 w-52 origin-top-right rounded-xl border border-(--line) bg-(--surface) p-1 shadow-lg outline-none"
+      >
+        <MenuItem>
+          {({ close }) => (
+            <button className={itemClass} onClick={() => (close(), onEdit(material))}>
+              Edit material
+            </button>
+          )}
+        </MenuItem>
+        <MenuItem>
+          {({ close }) => (
+            <button className={itemClass} onClick={() => (close(), onNotes(material))}>
+              Notes
+            </button>
+          )}
+        </MenuItem>
+        {!isInbox && (
+          <MenuItem>
+            {({ close }) => (
+              <button className={itemClass} onClick={() => (close(), onMove(material, 'inbox'))}>
+                Return to Inbox
+              </button>
+            )}
+          </MenuItem>
+        )}
+        <MenuItem>
+          {({ close }) => (
+            <button className={itemClass} onClick={() => (close(), onMove(material, 'archived'))}>
+              Archive
+            </button>
+          )}
+        </MenuItem>
+        <MenuItem>
+          {({ close }) => (
+            <button
+              className={`${itemClass} text-rose-700 data-focus:bg-rose-50`}
+              onClick={() => (close(), onDelete(material))}
+            >
+              Delete
+            </button>
+          )}
+        </MenuItem>
+      </MenuItems>
+    </Menu>
   );
 }
 

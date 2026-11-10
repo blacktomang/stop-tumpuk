@@ -103,7 +103,7 @@ export default function App() {
   const navigationItems = (
     <>
       <a className="nav-link" href="#queue">
-        Queue
+        Reading plan
       </a>
       <a className="nav-link" href="#inbox">
         Inbox
