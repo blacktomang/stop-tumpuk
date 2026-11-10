@@ -99,93 +99,42 @@ export function DataDialog({ open, onClose }: { open: boolean; onClose: () => vo
   );
 }
 
-function DataChooser({
+function ImportPreviewStep({
+  preview,
   busy,
-  error,
-  input,
-  onDownload,
-  onChoose,
+  onCancel,
+  onApply,
 }: {
+  preview: ImportPreview;
   busy: boolean;
-  error: string;
-  input: RefObject<HTMLInputElement | null>;
-  onDownload: () => void;
-  onChoose: (file: File | undefined) => Promise<void>;
+  onCancel: () => void;
+  onApply: () => Promise<void>;
 }) {
   return (
     <>
       <p className="section-kicker">Local data</p>
-      <DialogTitle className="modal-title">Back up or move your library</DialogTitle>
-      <p className="modal-copy">
-        Your data stays in this browser profile. Clearing browser data or using another device will not carry
-        it over automatically. Export a file to keep a backup or transfer it manually.
-      </p>
-      {error && (
-        <p role="alert" className="mt-4 text-sm text-rose-700">
-          {error}
-        </p>
-      )}
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="form-panel">
-          <p className="font-semibold">Export</p>
-          <p className="mt-1 text-sm text-(--muted)">
-            Download materials, notes, settings, sessions, and history.
-          </p>
-          <button className="primary-button mt-4 min-h-10 px-4 py-2" disabled={busy} onClick={onDownload}>
-            Download export
-          </button>
-        </div>
-        <div className="form-panel">
-          <p className="font-semibold">Import</p>
-          <p className="mt-1 text-sm text-(--muted)">
-            Adds valid new records only. Existing matching IDs are never overwritten.
-          </p>
-          <label className="mt-4 block text-sm font-medium" htmlFor="import-file">
-            Select an export file
-          </label>
-          <input
-            ref={input}
-            id="import-file"
-            className="mt-2 block w-full text-sm"
-            type="file"
-            accept="application/json,.json"
-            onChange={(event) => void onChoose(event.target.files?.[0])}
-          />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ImportPreviewStep({
-  busy,
-  preview,
-  onCancel,
-  onImport,
-}: {
-  busy: boolean;
-  preview: ImportPreview;
-  onCancel: () => void;
-  onImport: () => void;
-}) {
-  return (
-    <>
-      <p className="section-kicker">Import data</p>
-      <DialogTitle className="modal-title">Review import</DialogTitle>
-      <p className="modal-copy">Review the valid records before adding them to this browser.</p>
+      <DialogTitle className="modal-title">Import preview</DialogTitle>
       <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
-        <p className="font-semibold">Import preview</p>
-        <p className="mt-1">
+        <p>
           {preview.importable} new record{preview.importable === 1 ? '' : 's'} will be added.{' '}
           {preview.conflicts
             ? `${preview.conflicts} matching record${preview.conflicts === 1 ? '' : 's'} will be skipped without overwriting local data.`
             : 'No matching IDs found.'}
         </p>
-        <div className="mt-4 flex gap-2">
+      </div>
+      <div className="mt-5 flex flex-wrap justify-between gap-2">
+        <button className="action" onClick={onCancel}>
+          Back to data controls
+        </button>
+        <div className="flex gap-2">
           <button className="action" onClick={onCancel}>
-            Cancel
+            Cancel import
           </button>
-          <button className="primary-button min-h-10 px-4 py-2" disabled={busy} onClick={onImport}>
+          <button
+            className="primary-button min-h-10 px-4 py-2"
+            disabled={busy}
+            onClick={() => void onApply()}
+          >
             Import new records
           </button>
         </div>

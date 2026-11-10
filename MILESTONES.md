@@ -2,7 +2,7 @@
 
 **Version:** 2.1
 
-**Status:** Milestones 1–4 verified November 10, 2026; Milestone 5 and release checks remain unverified
+**Status:** Milestones 1–4 verified November 10, 2026. Milestone 5 automated validation is verified; physical-device and installed-Android sharing gates remain open.
 
 **Product authority:** [PRD.md](PRD.md) v2.1
 
@@ -77,16 +77,24 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** PRD section 11; FR-13, FR-14; AGENTS verification policy.
 
-- [ ] Update the production-browser capture-to-finish flow for Reading-plan default, explicit Inbox, edited estimate, single recommendation, direct finish, and later on-demand note retrieval. Mock external metadata responses.
-- [ ] Verify fresh setup and the one-time schema replacement, then reload/export/import new-format records with manual estimates, multiple notes per material, and active/paused timers. Confirm new data is not repeatedly reset and unsupported old backups cannot modify it.
-- [ ] Run the revision release checks using the actual package scripts: typecheck, relevant/full unit-storage suite, lint, formatting check, production build, and production-browser tests. Record commands and actual outcomes.
-- [ ] Validate production service-worker/offline access to stored material metadata, notes, and plan; verify update behavior and browser restart persistence.
-- [ ] Select and record browser/OS/device versions. Validate mobile and desktop paste-to-finish, responsive capacity display, action menus, and fallback source links; distinguish automated engines from real devices.
+- [x] Update the production-browser capture-to-finish flow for Reading-plan default, explicit Inbox, edited estimate, single recommendation, direct finish, and later on-demand note retrieval. Mock external metadata responses.
+- [x] Verify fresh setup and the one-time schema replacement, then reload/export/import new-format records with manual estimates, multiple notes per material, and active/paused timers. Confirm new data is not repeatedly reset and unsupported old backups cannot modify it.
+- [x] Run the revision release checks using the actual package scripts: typecheck, relevant/full unit-storage suite, lint, formatting check, production build, and production-browser tests. Record commands and actual outcomes.
+- [x] Validate production service-worker/offline access to stored material metadata, notes, and plan; verify update behavior and browser restart persistence.
+- [x] Select and record browser/OS/device versions. Validate mobile and desktop paste-to-finish, responsive capacity display, action menus, and fallback source links; distinguish automated engines from real devices.
 - [ ] On a physical installed Android Chrome PWA, validate incoming URL/text shares, destination selection, and duplicate handling. Record unsupported combinations accurately; do not imply iOS/Safari incoming-share support.
-- [ ] Record the first production database/schema and export-format baseline, supported released-format policy, and future migration/deprecation process from FR-13 and SYSTEM_DESIGN. Confirm the prototype reset cannot recur as a normal update or production recovery path. Do not build speculative future migrations.
+- [x] Record the first production database/schema and export-format baseline, supported released-format policy, and future migration/deprecation process from FR-13 and SYSTEM_DESIGN. Confirm the prototype reset cannot recur as a normal update or production recovery path. Do not build speculative future migrations.
 - [ ] Reconcile implementation notes and remaining limitations with the source-of-truth documents. Confirm every PRD v2.1 acceptance criterion has evidence before release.
 
 **Acceptance gate:** All revision requirements have implementation and verification evidence. Browser emulation does not satisfy native-share or physical-device gates. Failed/unrun checks stay unchecked, with the remaining limitation recorded.
+
+### Verification record — November 10, 2026
+
+- Passed: `pnpm typecheck`; `pnpm test` (10 files, 43 tests); `pnpm lint`; `pnpm format:check`; `pnpm build`; and `pnpm test:e2e` (12 Chromium/Firefox production-build flows).
+- Automated desktop/browser: Playwright 1.65.0 with Chromium 158.0.8127.18 and Firefox 159.0 on Linux 6.18.58.1-microsoft-standard-WSL2 x86_64. The browser flows cover Reading-plan default capture, explicit Inbox capture, mocked YouTube enrichment, estimate editing, one recommendation, direct finish, on-demand notes, current-format import/export, paused timers, reload and persistent-browser restart, offline reload, the update-activation contract, keyboard menus, external-source fallback links, and the production share-target POST path (including shared text, destination selection, and duplicate retry).
+- Automated mobile layout: Chromium at a 390 × 844 viewport validates capture-to-finish, capacity display, fallback external link, responsive action menus, and mobile navigation. This is emulation, not a physical phone/browser result.
+- Data baseline for the first production release: IndexedDB identity `stop-tumpuk-reading-plan-v1`, schema version 1, and export envelope `stop-tumpuk-reading-plan` version 1. The discarded prototype may not be reset or converted again. Post-release changes retain this identity and use versioned Dexie upgrades plus explicitly supported export conversions as described in `SYSTEM_DESIGN.md`.
+- Still unrun: physical mobile persistence/offline checks, WebKit checks (the installed binary cannot launch because this WSL host lacks runtime libraries; installing them requires interactive sudo authentication), and installed Android Chrome URL/text share intake including duplicate handling. No iOS/Safari incoming-share support is claimed. These open release-gate items keep the Milestone 5 acceptance gate unchecked.
 
 ## Deferred work and scope control
 
