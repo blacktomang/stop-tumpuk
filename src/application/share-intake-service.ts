@@ -1,6 +1,6 @@
-import { takeCaptureIntake } from '../repositories/capture-intake-repository';
+import { getCaptureIntake } from '../repositories/capture-intake-repository';
+import type { CaptureIntake } from '../types';
 
-export async function consumeShareIntake(id: string): Promise<string | null> {
-  const intake = await takeCaptureIntake(id);
-  return intake?.url ?? null;
+export async function loadShareIntake(id: string): Promise<CaptureIntake | null> {
+  return (await getCaptureIntake(id)) ?? null;
 }

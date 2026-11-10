@@ -19,8 +19,11 @@ export async function getMaterial(id: string): Promise<Material | undefined> {
  * A direct Reading-plan capture is both captured and committed; an Inbox
  * capture records only the capture.
  */
-export async function addCapturedMaterial(material: Material): Promise<void> {
-  await db.transaction('rw', db.materials, db.events, async () => {
+export async function addCapturedMaterial(material: Material, intakeId?: string): Promise<void> {
+  await db.transaction('rw', db.materials, db.events, db.captureIntake, async () => {
+    if (intakeId && !(await db.captureIntake.get(intakeId))) {
+      throw new Error('This shared link is no longer available. Please paste it again.');
+    }
     await db.materials.add(material);
     await db.events.add({
       id: crypto.randomUUID(),
@@ -36,6 +39,7 @@ export async function addCapturedMaterial(material: Material): Promise<void> {
         at: material.createdAt,
       });
     }
+    if (intakeId) await db.captureIntake.delete(intakeId);
   });
 }
 

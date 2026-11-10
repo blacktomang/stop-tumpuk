@@ -3,7 +3,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { nextAvailabilityReminder, shouldPromptForAvailability } from './application/availability-reminder';
 import { changeMaterialStatus, deleteMaterial } from './application/material-service';
-import { consumeShareIntake } from './application/share-intake-service';
+import { loadShareIntake } from './application/share-intake-service';
 import { saveSettings } from './application/settings-service';
 import { CaptureForm } from './features/capture/CaptureForm';
 import { CommitmentDashboard } from './features/dashboard/CommitmentDashboard';
@@ -15,7 +15,7 @@ import { NotesDialog } from './features/notes/NotesDialog';
 import { AvailabilityDialog } from './features/settings/AvailabilityDialog';
 import { useMaterials } from './repositories/material-repository';
 import { useSettings } from './repositories/settings-repository';
-import type { Material } from './types';
+import type { CaptureIntake, Material } from './types';
 
 export default function App() {
   const materials = useMaterials();
@@ -24,7 +24,7 @@ export default function App() {
   const [notesFor, setNotesFor] = useState<Material | null>(null);
   const [dataDialog, setDataDialog] = useState(false);
   const [onboarding, setOnboarding] = useState(false);
-  const [intakeUrl, setIntakeUrl] = useState<string | null>(null);
+  const [intake, setIntake] = useState<CaptureIntake | null>(null);
   const [operationError, setOperationError] = useState('');
   const shouldPromptAvailability = shouldPromptForAvailability(settings);
 
@@ -42,11 +42,22 @@ export default function App() {
     }
     const intakeId = params.get('capture');
     if (!intakeId) return;
-    void consumeShareIntake(intakeId).then((url) => {
-      setIntakeUrl(url);
-      history.replaceState({}, '', location.pathname);
+    void loadShareIntake(intakeId).then((nextIntake) => {
+      if (nextIntake) {
+        setIntake(nextIntake);
+      } else {
+        setOperationError('That shared link is no longer available. Please paste it instead.');
+        history.replaceState({}, '', location.pathname);
+      }
     });
   }, []);
+
+  function clearSavedIntake() {
+    setIntake(null);
+    const current = new URL(location.href);
+    current.searchParams.delete('capture');
+    history.replaceState({}, '', current.pathname + current.search + current.hash);
+  }
 
   async function moveMaterial(material: Material, status: 'inbox' | 'queued' | 'archived') {
     try {
@@ -158,7 +169,7 @@ export default function App() {
             {operationError}
           </p>
         )}
-        <CaptureForm intakeUrl={intakeUrl} />
+        <CaptureForm intake={intake} onIntakeSaved={clearSavedIntake} />
         <CommitmentDashboard
           materials={materials}
           weekdayMinutes={settings.weekdayMinutes}

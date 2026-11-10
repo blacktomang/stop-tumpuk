@@ -10,6 +10,12 @@ import type { Material, MaterialStatus } from '../types';
 
 export type CaptureDestination = Extract<MaterialStatus, 'inbox' | 'queued'>;
 
+export interface CaptureOptions {
+  allowDuplicate?: boolean;
+  intakeId?: string;
+  intakeTitle?: string | null;
+}
+
 export type CaptureResult =
   | { kind: 'saved'; material: Material }
   | {
@@ -18,7 +24,7 @@ export type CaptureResult =
       retry: () => Promise<CaptureResult>;
     };
 
-function newMaterial(rawUrl: string, destination: CaptureDestination): Material {
+function newMaterial(rawUrl: string, destination: CaptureDestination, intakeTitle?: string | null): Material {
   const { url, type, source } = classifyUrl(rawUrl);
   const timestamp = new Date().toISOString();
   return {
@@ -26,7 +32,7 @@ function newMaterial(rawUrl: string, destination: CaptureDestination): Material 
     originalUrl: url.toString(),
     normalizedUrl: normalizeUrl(url),
     domain: url.hostname.replace(/^www\./, ''),
-    title: inferredTitle(url),
+    title: intakeTitle?.trim() || inferredTitle(url),
     thumbnailUrl: null,
     type,
     status: destination,
@@ -61,18 +67,18 @@ async function enrichSavedMaterial(material: Material): Promise<void> {
 export async function captureUrl(
   rawUrl: string,
   destination: CaptureDestination,
-  allowDuplicate = false,
+  options: CaptureOptions = {},
 ): Promise<CaptureResult> {
-  const material = newMaterial(rawUrl.trim(), destination);
+  const material = newMaterial(rawUrl.trim(), destination, options.intakeTitle);
   const existing = await findMaterialByNormalizedUrl(material.normalizedUrl);
-  if (existing && !allowDuplicate) {
+  if (existing && !options.allowDuplicate) {
     return {
       kind: 'duplicate',
       existing,
-      retry: () => captureUrl(rawUrl, destination, true),
+      retry: () => captureUrl(rawUrl, destination, { ...options, allowDuplicate: true }),
     };
   }
-  await addCapturedMaterial(material);
+  await addCapturedMaterial(material, options.intakeId);
   void enrichSavedMaterial(material);
   return { kind: 'saved', material };
 }

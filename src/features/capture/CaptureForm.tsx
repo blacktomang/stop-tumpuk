@@ -1,25 +1,28 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { captureUrl, type CaptureDestination } from '../../application/capture-service';
+import type { CaptureIntake } from '../../types';
 
 interface CaptureFormProps {
-  intakeUrl: string | null;
+  intake: CaptureIntake | null;
+  onIntakeSaved: () => void;
 }
 
-export function CaptureForm({ intakeUrl }: CaptureFormProps) {
+export function CaptureForm({ intake, onIntakeSaved }: CaptureFormProps) {
   const [url, setUrl] = useState('');
   const [destination, setDestination] = useState<CaptureDestination>('queued');
   const [message, setMessage] = useState('');
   useEffect(() => {
-    if (!intakeUrl) return;
-    setUrl(intakeUrl);
+    if (!intake) return;
+    setUrl(intake.url);
     setMessage('Shared link ready to save.');
-  }, [intakeUrl]);
+  }, [intake]);
 
   async function capture(event: FormEvent) {
     event.preventDefault();
     setMessage('');
     try {
-      let result = await captureUrl(url, destination);
+      const captureOptions = intake ? { intakeId: intake.id, intakeTitle: intake.title } : undefined;
+      let result = await captureUrl(url, destination, captureOptions);
       if (result.kind === 'duplicate') {
         if (!confirm(`This link is already saved as “${result.existing.title}”. Save another copy?`)) return;
         result = await result.retry();
@@ -27,6 +30,7 @@ export function CaptureForm({ intakeUrl }: CaptureFormProps) {
       if (result.kind !== 'saved') return;
       setUrl('');
       setDestination('queued');
+      if (intake) onIntakeSaved();
       setMessage(
         result.material.status === 'queued'
           ? 'Saved to your Reading plan. Add an estimate when you are ready.'
