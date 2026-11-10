@@ -20,7 +20,7 @@ self.addEventListener('fetch', (event) => {
       const title = String(data.get('title') || '');
       const intakeId = crypto.randomUUID();
       await new Promise<void>((resolve, reject) => {
-        const open = indexedDB.open('stop-tumpuk', 4);
+        const open = indexedDB.open('stop-tumpuk-reading-plan-v1', 1);
         open.onupgradeneeded = () => {
           const database = open.result;
           const materials = database.objectStoreNames.contains('materials')
@@ -42,6 +42,17 @@ self.addEventListener('fetch', (event) => {
             ? open.transaction!.objectStore('captureIntake')
             : database.createObjectStore('captureIntake', { keyPath: 'id' });
           if (!intake.indexNames.contains('receivedAt')) intake.createIndex('receivedAt', 'receivedAt');
+          const notes = database.objectStoreNames.contains('notes')
+            ? open.transaction!.objectStore('notes')
+            : database.createObjectStore('notes', { keyPath: 'id' });
+          if (!notes.indexNames.contains('materialId')) notes.createIndex('materialId', 'materialId');
+          if (!notes.indexNames.contains('updatedAt')) notes.createIndex('updatedAt', 'updatedAt');
+          const sessions = database.objectStoreNames.contains('sessions')
+            ? open.transaction!.objectStore('sessions')
+            : database.createObjectStore('sessions', { keyPath: 'id' });
+          if (!sessions.indexNames.contains('materialId')) sessions.createIndex('materialId', 'materialId');
+          if (!sessions.indexNames.contains('stateChangedAt'))
+            sessions.createIndex('stateChangedAt', 'stateChangedAt');
         };
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {

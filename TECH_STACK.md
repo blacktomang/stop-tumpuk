@@ -1,6 +1,6 @@
 # Technical stack
 
-**Status:** Existing application stack retained for PRD v2.1. The simplification revision is planned, not implemented; physical-device validation remains a release gate.
+**Status:** Existing application stack retained for PRD v2.1. Milestone 1 is implemented; later simplification milestones and physical-device validation remain release work.
 
 **Scope authority:** [PRD.md](PRD.md). Delivery order: [MILESTONES.md](MILESTONES.md).
 

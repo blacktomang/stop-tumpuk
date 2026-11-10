@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { effortSeconds, formatDuration } from '../../domain';
+import { estimateLabel, estimatedSeconds, formatDuration } from '../../domain';
 import type { Material, MaterialStatus } from '../../types';
 
 interface MaterialListsProps {
@@ -115,17 +115,12 @@ function MaterialList({
                     {material.title}
                   </a>
                   <p className="material-meta">
-                    {material.domain} · {material.type} ·{' '}
-                    {material.contentSeconds === null
-                      ? 'time unknown'
-                      : `${formatDuration(material.contentSeconds)} (${material.durationSource}, ${material.completeness})`}
+                    {material.domain} · {material.type} · {estimateLabel(material)}
                   </p>
                   <p className="material-effort">
-                    Learning effort: <strong>{formatDuration(effortSeconds(material))}</strong>
-                    {material.manualEffortSeconds !== null ? ' (manual)' : ''}
+                    Estimated time: <strong>{formatDuration(estimatedSeconds(material))}</strong>
                   </p>
                 </div>
-                <span className="priority-chip">P{material.priority}</span>
               </div>
               <div className="material-actions">
                 <button className="action" onClick={() => onEdit(material)}>

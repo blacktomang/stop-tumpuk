@@ -39,5 +39,3 @@ export async function updateNote(note: Note, content: string): Promise<void> {
 export async function deleteNote(note: Note): Promise<void> {
   await db.notes.delete(note.id);
 }
-
-export const createTakeaway = createNote;

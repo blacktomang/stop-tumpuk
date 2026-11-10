@@ -20,12 +20,10 @@ export function AvailabilityDialog({ open, settings, onClose, onSave }: Availabi
   );
   const [weekday, setWeekday] = useState(settings.weekdayMinutes ?? 0);
   const [weekend, setWeekend] = useState(settings.weekendMinutes ?? 0);
-  const [readingWpm, setReadingWpm] = useState(settings.readingWpm);
   useEffect(() => {
     setEnabled(settings.weekdayMinutes !== null || settings.weekendMinutes !== null);
     setWeekday(settings.weekdayMinutes ?? 0);
     setWeekend(settings.weekendMinutes ?? 0);
-    setReadingWpm(settings.readingWpm);
   }, [settings, open]);
   async function save(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +31,6 @@ export function AvailabilityDialog({ open, settings, onClose, onSave }: Availabi
       ...settings,
       weekdayMinutes: enabled ? Math.max(0, weekday) : null,
       weekendMinutes: enabled ? Math.max(0, weekend) : null,
-      readingWpm: Math.max(1, readingWpm),
     });
   }
   return (
@@ -72,22 +69,6 @@ export function AvailabilityDialog({ open, settings, onClose, onSave }: Availabi
                   <DailyAvailabilitySelect label="Weekends" value={weekend} onChange={setWeekend} />
                 </div>
               )}
-              <label className="block text-sm font-medium">
-                <span className="flex items-center gap-1.5">
-                  Reading estimate (words per minute)
-                  <InfoTip>
-                    Used only when estimating an article from pasted text. 250 WPM is the default planning
-                    assumption.
-                  </InfoTip>
-                </span>
-                <input
-                  className={field}
-                  type="number"
-                  min="1"
-                  value={readingWpm}
-                  onChange={(event) => setReadingWpm(Number(event.target.value))}
-                />
-              </label>
               <div className="flex justify-end gap-2">
                 <button type="button" className="action" onClick={onClose}>
                   Skip for 3 months

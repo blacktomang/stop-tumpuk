@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   backlog,
-  effortSeconds,
+  estimatedSeconds,
   extractSharedUrl,
   normalizeUrl,
   recommendMaterials,
   weeklyCapacitySeconds,
-  wordCount,
 } from './domain';
 import type { Material } from './types';
 
@@ -19,26 +18,44 @@ const material = (overrides: Partial<Material> = {}): Material => ({
   thumbnailUrl: null,
   type: 'article',
   status: 'queued',
-  priority: 2,
-  contentSeconds: 600,
-  durationSource: 'manual',
-  completeness: 'full',
-  wordCount: null,
+  sourceDurationSeconds: 600,
+  sourceDurationProvenance: 'publisher-estimate',
+  sourceDurationCompleteness: 'full',
   playbackSpeed: 1,
-  effortMultiplier: 1.5,
-  manualEffortSeconds: null,
+  manualEstimatedSeconds: null,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   ...overrides,
 });
 
 describe('Milestone 1 planning rules', () => {
-  it('uses a manual total-effort override over derived effort', () => {
-    expect(effortSeconds(material({ manualEffortSeconds: 1_200 }))).toBe(1_200);
+  it('uses a manual estimated-time override over the preserved source duration', () => {
+    expect(estimatedSeconds(material({ sourceDurationSeconds: 600, manualEstimatedSeconds: 1_200 }))).toBe(
+      1_200,
+    );
+  });
+
+  it('keeps zero as an explicit manual estimate', () => {
+    expect(estimatedSeconds(material({ manualEstimatedSeconds: 0 }))).toBe(0);
+  });
+
+  it('returns to the source estimate when a manual correction is cleared', () => {
+    expect(estimatedSeconds(material({ sourceDurationSeconds: 600, manualEstimatedSeconds: null }))).toBe(
+      600,
+    );
   });
 
   it('keeps an unknown duration unknown instead of zero', () => {
-    expect(effortSeconds(material({ contentSeconds: null }))).toBeNull();
+    expect(estimatedSeconds(material({ sourceDurationSeconds: null }))).toBeNull();
+  });
+
+  it('adjusts only video source runtimes for the retained playback speed preference', () => {
+    expect(estimatedSeconds(material({ type: 'video', sourceDurationSeconds: 600, playbackSpeed: 2 }))).toBe(
+      300,
+    );
+    expect(
+      estimatedSeconds(material({ type: 'article', sourceDurationSeconds: 600, playbackSpeed: 2 })),
+    ).toBe(600);
   });
 
   it('uses weekday and weekend availability to calculate weekly capacity', () => {
@@ -47,12 +64,8 @@ describe('Milestone 1 planning rules', () => {
   });
 
   it('marks backlog totals as partial when a committed item is unknown', () => {
-    const result = backlog([material(), material({ id: 'unknown', contentSeconds: null })], 30, 60);
-    expect(result).toMatchObject({ active: 2, known: 900, unknown: 1, capacity: 16_200 });
-  });
-
-  it('counts pasted whitespace-separated article text locally', () => {
-    expect(wordCount('One  two\nthree')).toBe(3);
+    const result = backlog([material(), material({ id: 'unknown', sourceDurationSeconds: null })], 30, 60);
+    expect(result).toMatchObject({ active: 2, known: 600, unknown: 1, capacity: 16_200 });
   });
 
   it('preserves a resource fragment while removing known campaign parameters', () => {
@@ -67,29 +80,27 @@ describe('Milestone 1 planning rules', () => {
   });
 });
 
-describe('Milestone 2 recommendation rules', () => {
-  it('ranks fitting material by priority, then in-progress state and effort', () => {
+describe('recommendation ordering without priority', () => {
+  it('prefers in-progress material, then shorter estimates, creation time, and stable ID', () => {
     const result = recommendMaterials(
       [
-        material({ id: 'lower-priority', priority: 3, manualEffortSeconds: 300 }),
-        material({ id: 'in-progress', status: 'in-progress', priority: 2, manualEffortSeconds: 600 }),
-        material({ id: 'shorter', priority: 2, manualEffortSeconds: 300 }),
+        material({ id: 'later', manualEstimatedSeconds: 300, createdAt: '2026-01-02T00:00:00.000Z' }),
+        material({ id: 'in-progress', status: 'in-progress', manualEstimatedSeconds: 600 }),
+        material({ id: 'first', manualEstimatedSeconds: 300, createdAt: '2026-01-01T00:00:00.000Z' }),
       ],
       600,
     );
-
-    expect(result.fitting.map((item) => item.id)).toEqual(['in-progress', 'shorter', 'lower-priority']);
+    expect(result.fitting.map((item) => item.id)).toEqual(['in-progress', 'first', 'later']);
   });
 
-  it('does not claim unknown effort fits and offers a larger partial-session option', () => {
+  it('does not claim unknown estimates fit and offers a longer partial-session option', () => {
     const result = recommendMaterials(
       [
-        material({ id: 'unknown', contentSeconds: null }),
-        material({ id: 'long', manualEffortSeconds: 1_200 }),
+        material({ id: 'unknown', sourceDurationSeconds: null }),
+        material({ id: 'long', manualEstimatedSeconds: 1_200 }),
       ],
       600,
     );
-
     expect(result.fitting).toEqual([]);
     expect(result.partial?.id).toBe('long');
   });

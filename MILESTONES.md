@@ -2,7 +2,7 @@
 
 **Version:** 2.1
 
-**Status:** Fresh implementation cycle; all deliverables below are unverified and unchecked
+**Status:** Milestone 1 verified November 10, 2026; later deliverables remain unverified and unchecked
 
 **Product authority:** [PRD.md](PRD.md) v2.1
 
@@ -24,13 +24,13 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** FR-03, FR-04, FR-13; SYSTEM_DESIGN persistence and schema-replacement sections.
 
-- [ ] Define the new material, note, session, settings, and estimated-time types directly; use one domain estimate calculation with explicit zero/unknown distinctions and internal duration provenance.
-- [ ] Replace the prototype database schema/data once in this pre-production milestone. Do not add prototype migration adapters or preserve prototype schema chains for compatibility. Record the new database identity and baseline; verify subsequent launches retain data. This permission does not extend to later production upgrades.
-- [ ] Define and validate the current export/import format only. Retain atomic additive import and conflict preview; reject unsupported formats before writes. Remove old-backup conversion and compatibility code if present.
-- [ ] Remove priority/multiplier fields and their consumers, ranking effects, defaults, badges, and edit controls; replace obsolete data structures rather than deprecating them.
-- [ ] Replace separate duration/total-effort inputs with one estimated-minutes correction. Keep simple provenance labels and advanced type/video-speed correction; remove technical source/completeness selectors.
-- [ ] Remove the pasted-content input, word-counter action, and article reading-speed setting. Retain weekday/weekend configuration in the new settings model.
-- [ ] Update domain/storage tests and fixtures for fresh initialization, one-time cutover, subsequent-launch persistence, override precedence, unknown/zero values, multiple notes per material, transaction rollback, unsupported imports, and current-format round trips.
+- [x] Define the new material, note, session, settings, and estimated-time types directly; use one domain estimate calculation with explicit zero/unknown distinctions and internal duration provenance.
+- [x] Replace the prototype database schema/data once in this pre-production milestone. Do not add prototype migration adapters or preserve prototype schema chains for compatibility. Record the new database identity and baseline; verify subsequent launches retain data. This permission does not extend to later production upgrades.
+- [x] Define and validate the current export/import format only. Retain atomic additive import and conflict preview; reject unsupported formats before writes. Remove old-backup conversion and compatibility code if present.
+- [x] Remove priority/multiplier fields and their consumers, ranking effects, defaults, badges, and edit controls; replace obsolete data structures rather than deprecating them.
+- [x] Replace separate duration/total-effort inputs with one estimated-minutes correction. Keep simple provenance labels and advanced type/video-speed correction; remove technical source/completeness selectors.
+- [x] Remove the pasted-content input, word-counter action, and article reading-speed setting. Retain weekday/weekend configuration in the new settings model.
+- [x] Update domain/storage tests and fixtures for fresh initialization, one-time cutover, subsequent-launch persistence, override precedence, unknown/zero values, multiple notes per material, transaction rollback, unsupported imports, and current-format round trips.
 
 **Acceptance gate:** The one-time prototype replacement is complete and its reset exception is closed. The app initializes directly into the new model, target estimates are consistent in every consumer, and removed rules have no active or compatibility paths. New-format data remains durable; old-format imports fail without changing it. Run type checking and focused estimation/storage checks before checking items above.
 

@@ -1,7 +1,7 @@
 export type MaterialStatus = 'inbox' | 'queued' | 'in-progress' | 'completed' | 'archived';
 export type MaterialType = 'article' | 'video' | 'unknown';
-export type DurationSource = 'api-runtime' | 'publisher-estimate' | 'word-count' | 'manual' | 'unknown';
-export type Completeness = 'full' | 'partial' | 'unknown';
+export type DurationProvenance = 'api-runtime' | 'publisher-estimate' | 'word-count' | 'manual' | 'unknown';
+export type DurationCompleteness = 'full' | 'partial' | 'unknown';
 
 export interface Material {
   id: string;
@@ -12,31 +12,33 @@ export interface Material {
   thumbnailUrl: string | null;
   type: MaterialType;
   status: MaterialStatus;
-  priority: 1 | 2 | 3;
-  contentSeconds: number | null;
-  durationSource: DurationSource;
-  completeness: Completeness;
-  wordCount: number | null;
+  /** A provider-derived duration, retained independently of a user correction. */
+  sourceDurationSeconds: number | null;
+  sourceDurationProvenance: DurationProvenance;
+  sourceDurationCompleteness: DurationCompleteness;
+  /** Used only for videos when deriving a planning estimate from source duration. */
   playbackSpeed: number;
-  effortMultiplier: number;
-  manualEffortSeconds: number | null;
+  /** An explicit planning correction; null returns to the source-based estimate. */
+  manualEstimatedSeconds: number | null;
   createdAt: string;
   updatedAt: string;
 }
+
 export interface Settings {
   id: 'settings';
   weekdayMinutes: number | null;
   weekendMinutes: number | null;
-  readingWpm: number;
   onboardingDismissed: boolean;
   availabilityReminderAt: string | null;
 }
+
 export interface MaterialEvent {
   id: string;
   materialId: string;
   type: 'captured' | 'queued' | 'in-progress' | 'completed' | 'reopened' | 'archived' | 'deleted';
   at: string;
 }
+
 export interface Note {
   id: string;
   materialId: string;
@@ -44,6 +46,7 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
 }
+
 export type SessionState = 'running' | 'paused' | 'ended';
 export interface LearningSession {
   id: string;
@@ -54,22 +57,21 @@ export interface LearningSession {
   stateChangedAt: string;
   endedAt: string | null;
 }
+
 export interface CaptureIntake {
   id: string;
   url: string;
   title: string | null;
   receivedAt: string;
 }
+
 export type MaterialDraft = Pick<
   Material,
   | 'title'
   | 'type'
-  | 'priority'
-  | 'contentSeconds'
-  | 'durationSource'
-  | 'completeness'
-  | 'wordCount'
+  | 'sourceDurationSeconds'
+  | 'sourceDurationProvenance'
+  | 'sourceDurationCompleteness'
   | 'playbackSpeed'
-  | 'effortMultiplier'
-  | 'manualEffortSeconds'
+  | 'manualEstimatedSeconds'
 >;

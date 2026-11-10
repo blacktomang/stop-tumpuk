@@ -183,11 +183,7 @@ export default function App() {
           onDelete={(material) => void removeMaterial(material)}
         />
       </div>
-      <EditMaterialDialog
-        material={editing}
-        readingWpm={settings.readingWpm}
-        onClose={() => setEditing(null)}
-      />
+      <EditMaterialDialog material={editing} onClose={() => setEditing(null)} />
       <NotesDialog material={notesFor} onClose={() => setNotesFor(null)} />
       <DataDialog open={dataDialog} onClose={() => setDataDialog(false)} />
       <AvailabilityDialog

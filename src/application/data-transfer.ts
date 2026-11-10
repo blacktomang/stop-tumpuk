@@ -1,8 +1,11 @@
 import { db } from '../db';
 import type { LearningSession, Material, MaterialEvent, Note, Settings } from '../types';
 
+/** This marker is independent from IndexedDB's schema version. */
+export const exportFormat = 'stop-tumpuk-reading-plan';
 export const exportVersion = 1;
 export interface ExportEnvelope {
+  format: typeof exportFormat;
   version: typeof exportVersion;
   exportedAt: string;
   materials: Material[];
@@ -18,7 +21,8 @@ export interface ImportPreview {
 }
 
 const statuses = new Set(['inbox', 'queued', 'in-progress', 'completed', 'archived']);
-const sources = new Set(['api-runtime', 'publisher-estimate', 'word-count', 'manual', 'unknown']);
+const materialTypes = new Set(['article', 'video', 'unknown']);
+const provenance = new Set(['api-runtime', 'publisher-estimate', 'word-count', 'manual', 'unknown']);
 const completeness = new Set(['full', 'partial', 'unknown']);
 const eventTypes = new Set([
   'captured',
@@ -35,13 +39,18 @@ function record(value: unknown, message: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 function string(value: unknown, message: string): string {
-  if (typeof value !== 'string' || !value) throw new Error(message);
+  if (typeof value !== 'string' || !value.trim()) throw new Error(message);
   return value;
 }
 function nullableNumber(value: unknown, message: string): number | null {
   if (value === null) return null;
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) throw new Error(message);
   return value;
+}
+function positiveNumber(value: unknown, message: string): number {
+  const number = nullableNumber(value, message);
+  if (number === null || number === 0) throw new Error(message);
+  return number;
 }
 function array(value: unknown, message: string): unknown[] {
   if (!Array.isArray(value)) throw new Error(message);
@@ -61,18 +70,15 @@ function validUrl(value: unknown): string {
 function material(value: unknown): Material {
   const input = record(value, 'A material record is invalid.');
   const status = string(input.status, 'A material status is invalid.');
-  if (!statuses.has(status)) throw new Error('A material status is invalid.');
   const type = string(input.type, 'A material type is invalid.');
-  if (!['article', 'video', 'unknown'].includes(type)) throw new Error('A material type is invalid.');
-  const source = string(input.durationSource, 'A duration source is invalid.');
-  const content = string(input.completeness, 'A content completeness value is invalid.');
-  if (!sources.has(source) || !completeness.has(content)) throw new Error('A material estimate is invalid.');
-  const priority = input.priority;
-  if (priority !== 1 && priority !== 2 && priority !== 3) throw new Error('A material priority is invalid.');
-  const playbackSpeed = nullableNumber(input.playbackSpeed, 'A playback speed is invalid.');
-  const effortMultiplier = nullableNumber(input.effortMultiplier, 'An effort multiplier is invalid.');
-  if (!playbackSpeed || !effortMultiplier)
-    throw new Error('A playback speed and effort multiplier are required.');
+  const source = string(input.sourceDurationProvenance, 'A duration provenance is invalid.');
+  const sourceCompleteness = string(
+    input.sourceDurationCompleteness,
+    'A duration completeness value is invalid.',
+  );
+  if (!statuses.has(status) || !materialTypes.has(type)) throw new Error('A material record is invalid.');
+  if (!provenance.has(source) || !completeness.has(sourceCompleteness))
+    throw new Error('A material estimate is invalid.');
   return {
     id: string(input.id, 'A material ID is missing.'),
     originalUrl: validUrl(input.originalUrl),
@@ -82,14 +88,11 @@ function material(value: unknown): Material {
     thumbnailUrl: input.thumbnailUrl === null ? null : validUrl(input.thumbnailUrl),
     type: type as Material['type'],
     status: status as Material['status'],
-    priority,
-    contentSeconds: nullableNumber(input.contentSeconds, 'A content duration is invalid.'),
-    durationSource: source as Material['durationSource'],
-    completeness: content as Material['completeness'],
-    wordCount: nullableNumber(input.wordCount, 'A word count is invalid.'),
-    playbackSpeed,
-    effortMultiplier,
-    manualEffortSeconds: nullableNumber(input.manualEffortSeconds, 'Manual effort is invalid.'),
+    sourceDurationSeconds: nullableNumber(input.sourceDurationSeconds, 'A source duration is invalid.'),
+    sourceDurationProvenance: source as Material['sourceDurationProvenance'],
+    sourceDurationCompleteness: sourceCompleteness as Material['sourceDurationCompleteness'],
+    playbackSpeed: positiveNumber(input.playbackSpeed, 'A playback speed is invalid.'),
+    manualEstimatedSeconds: nullableNumber(input.manualEstimatedSeconds, 'A manual estimate is invalid.'),
     createdAt: validDate(input.createdAt, 'A material date is invalid.'),
     updatedAt: validDate(input.updatedAt, 'A material date is invalid.'),
   };
@@ -109,13 +112,10 @@ function settings(value: unknown): Settings | null {
   const input = record(value, 'Settings are invalid.');
   if (input.id !== 'settings' || typeof input.onboardingDismissed !== 'boolean')
     throw new Error('Settings are invalid.');
-  const readingWpm = nullableNumber(input.readingWpm, 'Reading speed is invalid.');
-  if (!readingWpm) throw new Error('Reading speed is invalid.');
   return {
     id: 'settings',
     weekdayMinutes: nullableNumber(input.weekdayMinutes, 'Weekday availability is invalid.'),
     weekendMinutes: nullableNumber(input.weekendMinutes, 'Weekend availability is invalid.'),
-    readingWpm,
     onboardingDismissed: input.onboardingDismissed,
     availabilityReminderAt:
       input.availabilityReminderAt === null
@@ -148,17 +148,15 @@ function session(value: unknown): LearningSession {
     endedAt: input.endedAt === null ? null : validDate(input.endedAt, 'A session date is invalid.'),
   };
 }
-
-export function parseExport(value: string): ExportEnvelope {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(value);
-  } catch {
-    throw new Error('Choose a valid stop-tumpuk export file.');
-  }
-  const input = record(raw, 'Choose a valid stop-tumpuk export file.');
-  if (input.version !== exportVersion) throw new Error('This export version is not supported.');
+function ensureUnique(records: Array<{ id: string }>, message: string) {
+  if (new Set(records.map((item) => item.id)).size !== records.length) throw new Error(message);
+}
+function validateEnvelope(value: unknown): ExportEnvelope {
+  const input = record(value, 'Choose a valid stop-tumpuk export file.');
+  if (input.format !== exportFormat || input.version !== exportVersion)
+    throw new Error('This export format is not supported.');
   const data: ExportEnvelope = {
+    format: exportFormat,
     version: exportVersion,
     exportedAt: validDate(input.exportedAt, 'The export date is invalid.'),
     materials: array(input.materials, 'Materials are invalid.').map(material),
@@ -167,12 +165,25 @@ export function parseExport(value: string): ExportEnvelope {
     events: array(input.events, 'Events are invalid.').map(event),
     sessions: array(input.sessions, 'Sessions are invalid.').map(session),
   };
-  const ids = new Set(data.materials.map((item) => item.id));
-  if (ids.size !== data.materials.length) throw new Error('Material IDs must be unique.');
-  for (const item of [...data.notes, ...data.events, ...data.sessions])
-    if (!ids.has(item.materialId))
+  ensureUnique(data.materials, 'Material IDs must be unique.');
+  ensureUnique(data.notes, 'Note IDs must be unique.');
+  ensureUnique(data.events, 'Event IDs must be unique.');
+  ensureUnique(data.sessions, 'Session IDs must be unique.');
+  const materialIds = new Set(data.materials.map((item) => item.id));
+  for (const item of [...data.notes, ...data.events, ...data.sessions]) {
+    if (!materialIds.has(item.materialId))
       throw new Error('Every imported note, event, and session must reference an imported material.');
+  }
   return data;
+}
+
+export function parseExport(value: string): ExportEnvelope {
+  try {
+    return validateEnvelope(JSON.parse(value) as unknown);
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error('Choose a valid stop-tumpuk export file.');
+    throw error;
+  }
 }
 
 export async function exportData(): Promise<ExportEnvelope> {
@@ -184,6 +195,7 @@ export async function exportData(): Promise<ExportEnvelope> {
     db.sessions.toArray(),
   ]);
   return {
+    format: exportFormat,
     version: exportVersion,
     exportedAt: new Date().toISOString(),
     materials,
@@ -208,19 +220,21 @@ export async function previewImport(text: string): Promise<ImportPreview> {
   return { data, conflicts, importable: ids.length + (data.settings ? 1 : 0) - conflicts };
 }
 
+/** Applies only a validated preview and never clears or overwrites local records. */
 export async function importData(data: ExportEnvelope): Promise<void> {
+  const validated = validateEnvelope(data);
   await db.transaction('rw', db.materials, db.notes, db.settings, db.events, db.sessions, async () => {
     const [materials, notes, events, sessions, existingSettings] = await Promise.all([
-      db.materials.bulkGet(data.materials.map((item) => item.id)),
-      db.notes.bulkGet(data.notes.map((item) => item.id)),
-      db.events.bulkGet(data.events.map((item) => item.id)),
-      db.sessions.bulkGet(data.sessions.map((item) => item.id)),
+      db.materials.bulkGet(validated.materials.map((item) => item.id)),
+      db.notes.bulkGet(validated.notes.map((item) => item.id)),
+      db.events.bulkGet(validated.events.map((item) => item.id)),
+      db.sessions.bulkGet(validated.sessions.map((item) => item.id)),
       db.settings.get('settings'),
     ]);
-    await db.materials.bulkAdd(data.materials.filter((_, index) => !materials[index]));
-    await db.notes.bulkAdd(data.notes.filter((_, index) => !notes[index]));
-    await db.events.bulkAdd(data.events.filter((_, index) => !events[index]));
-    await db.sessions.bulkAdd(data.sessions.filter((_, index) => !sessions[index]));
-    if (data.settings && !existingSettings) await db.settings.add(data.settings);
+    await db.materials.bulkAdd(validated.materials.filter((_, index) => !materials[index]));
+    await db.notes.bulkAdd(validated.notes.filter((_, index) => !notes[index]));
+    await db.events.bulkAdd(validated.events.filter((_, index) => !events[index]));
+    await db.sessions.bulkAdd(validated.sessions.filter((_, index) => !sessions[index]));
+    if (validated.settings && !existingSettings) await db.settings.add(validated.settings);
   });
 }

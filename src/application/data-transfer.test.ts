@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { exportVersion, parseExport } from './data-transfer';
+import { exportFormat, exportVersion, parseExport } from './data-transfer';
 
 const valid = () => ({
+  format: exportFormat,
   version: exportVersion,
-  exportedAt: '2026-11-09T00:00:00.000Z',
+  exportedAt: '2026-11-10T00:00:00.000Z',
   settings: null,
-  notes: [],
+  notes: [] as Array<{
+    id: string;
+    materialId: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+  }>,
   events: [],
   sessions: [],
   materials: [
@@ -18,34 +25,37 @@ const valid = () => ({
       thumbnailUrl: null,
       type: 'article',
       status: 'queued',
-      priority: 2,
-      contentSeconds: 60,
-      durationSource: 'manual',
-      completeness: 'full',
-      wordCount: null,
+      sourceDurationSeconds: 60,
+      sourceDurationProvenance: 'publisher-estimate',
+      sourceDurationCompleteness: 'full',
       playbackSpeed: 1,
-      effortMultiplier: 1.5,
-      manualEffortSeconds: null,
-      createdAt: '2026-11-09T00:00:00.000Z',
-      updatedAt: '2026-11-09T00:00:00.000Z',
+      manualEstimatedSeconds: 0,
+      createdAt: '2026-11-10T00:00:00.000Z',
+      updatedAt: '2026-11-10T00:00:00.000Z',
     },
   ],
 });
 
-describe('data export validation', () => {
-  it('accepts a complete, versioned export envelope', () => {
-    expect(parseExport(JSON.stringify(valid())).materials).toHaveLength(1);
+describe('current-format data export validation', () => {
+  it('accepts the current versioned envelope, including a zero manual estimate', () => {
+    expect(parseExport(JSON.stringify(valid())).materials[0]?.manualEstimatedSeconds).toBe(0);
   });
+
+  it('rejects old and future envelope markers before records are considered', () => {
+    const old = valid();
+    delete (old as { format?: string }).format;
+    expect(() => parseExport(JSON.stringify(old))).toThrow('format');
+    expect(() => parseExport(JSON.stringify({ ...valid(), version: exportVersion + 1 }))).toThrow('format');
+  });
+
   it('rejects records with unsupported lifecycle values', () => {
-    const data = JSON.parse(JSON.stringify(valid())) as { materials: Array<{ status: string }> };
+    const data = valid();
     data.materials[0]!.status = 'invented';
-    expect(() => parseExport(JSON.stringify(data))).toThrow('status');
+    expect(() => parseExport(JSON.stringify(data))).toThrow('material');
   });
+
   it('rejects notes without an imported source material', () => {
-    const data = JSON.parse(JSON.stringify(valid())) as {
-      exportedAt: string;
-      notes: Array<{ id: string; materialId: string; content: string; createdAt: string; updatedAt: string }>;
-    };
+    const data = valid();
     data.notes.push({
       id: 'n1',
       materialId: 'missing',

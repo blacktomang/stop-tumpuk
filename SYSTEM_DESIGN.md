@@ -1,6 +1,6 @@
 # System design
 
-**Status:** Target architecture for PRD v2.1; simplification not implemented. The existing app includes capture, commitment, sessions, notes, and data transfer. Physical-device release validation remains outstanding.
+**Status:** Milestone 1's data and estimation foundation is implemented; later PRD v2.1 milestones and physical-device release validation remain outstanding.
 
 **Product authority:** [PRD.md](PRD.md). Delivery scope: [MILESTONES.md](MILESTONES.md).
 
@@ -50,7 +50,7 @@ Use feature-local tests beside the implementation where practical. Keep database
 
 ## Persistence model
 
-The current app uses a version-4 Dexie schema in `src/db.ts`; that is implementation history, not a compatibility constraint. Build the new schema directly for FR-01 through FR-10 and FR-12 through FR-14. For the Milestone 1 prototype replacement, types, field names, store layout, and lifecycle identifiers may change consistently without migration adapters or deprecated aliases. Later released-schema changes follow the production evolution policy below. TypeScript and runtime schemas live with the implementation. Do not add note-link tables for deferred FR-11.
+Milestone 1 established the new `stop-tumpuk-reading-plan-v1` Dexie identity at schema version 1 in `src/db.ts`, plus the `stop-tumpuk-reading-plan` export envelope at format version 1. This is the first pre-production baseline, not a prototype compatibility constraint. Types, field names, store layout, and lifecycle identifiers were replaced directly without migration adapters or deprecated aliases. Later released-schema changes follow the production evolution policy below. TypeScript and runtime schemas live with the implementation. Do not add note-link tables for deferred FR-11.
 
 | Store                       | Target data and boundary                                                                                                                                                                                                                                |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -68,7 +68,7 @@ Use seconds internally and UTC timestamps for persisted instants. Render minutes
 
 The November 10 clarification authorizes a clean replacement of incompatible prototype local data only in the upcoming pre-production Milestone 1. Do not implement prototype-record conversion, prototype migration chains, deprecated prototype properties, old-prototype export readers, or compatibility shims for that cutover. Define current records and validation directly, remove obsolete fields, and update all consumers together. Reorganize modules when useful while retaining separation between domain rules, UI, repositories, providers, and the service worker.
 
-Use a new database identity for the replacement schema as the default implementation: initialize its current schema once, and point both UI repositories and the service worker's intake storage at the same new identity. Pre-revision records are not copied or read by the new app. The old database may be removed as part of cutover if needed, but no cleanup scaffolding is required merely to keep compatibility. Document the selected identity with the implementation.
+The cutover uses the fixed `stop-tumpuk-reading-plan-v1` identity: initialize its current schema once, and point both UI repositories and the service worker's intake storage at that same identity. Pre-revision records are not copied or read by the new app. The old database may be removed as part of cutover if needed, but no cleanup scaffolding is required merely to keep compatibility.
 
 Never delete/recreate the current database on every app load or on a transient storage error. Subsequent launches reopen the new database and retain its records. Keep an explicit current export-format marker so unsupported old or future payloads can be rejected before writing. Export/import round trips support the current model only, including all notes associated with one material.
 

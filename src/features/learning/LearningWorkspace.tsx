@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { effortSeconds, formatDuration, recommendMaterials } from '../../domain';
-import { createTakeaway } from '../../repositories/note-repository';
+import { estimatedSeconds, formatDuration, recommendMaterials } from '../../domain';
+import { createNote } from '../../repositories/note-repository';
 import {
   endSession,
   pauseSession,
@@ -147,7 +147,7 @@ function RecommendationList({
           <div>
             <p className="font-semibold text-(--ink)">Try part of a longer item</p>
             <p className="text-sm text-(--muted)">
-              {partial.title} · {formatDuration(effortSeconds(partial))} estimated
+              {partial.title} · {formatDuration(estimatedSeconds(partial))} estimated
             </p>
           </div>
           <button className="action" onClick={() => onChoose(partial)}>
@@ -178,9 +178,7 @@ function RecommendationRow({
     <div className="recommendation-row">
       <div className="min-w-0">
         <p className="truncate font-semibold text-(--ink)">{material.title}</p>
-        <p className="text-sm text-(--muted)">
-          P{material.priority} · {formatDuration(effortSeconds(material))} learning effort
-        </p>
+        <p className="text-sm text-(--muted)">{formatDuration(estimatedSeconds(material))} estimated time</p>
       </div>
       <button className="action" onClick={() => onChoose(material)}>
         Select
@@ -223,7 +221,7 @@ function LearningView({
           <p className="section-kicker">Learning session</p>
           <h3 className="modal-title">{material.title}</h3>
           <p className="modal-copy">
-            {formatDuration(effortSeconds(material))} estimated learning effort · {material.domain}
+            {formatDuration(estimatedSeconds(material))} estimated time · {material.domain}
           </p>
         </div>
         <a className="primary-button" href={material.originalUrl} target="_blank" rel="noreferrer">
@@ -339,7 +337,7 @@ function TakeawayPrompt({ material, onClose }: { material: Material; onClose: ()
     try {
       setSaving(true);
       setError('');
-      await createTakeaway(material.id, content);
+      await createNote(material.id, content);
       onClose();
     } catch {
       setError('Your completion is saved, but the takeaway was not. Please retry or skip it.');

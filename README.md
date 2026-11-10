@@ -4,19 +4,16 @@ Turn useful articles and videos you discover into learning you actually finish.
 
 stop-tumpuk is a web-first, mobile-friendly PWA for capturing learning resources, making their time cost visible, and choosing a manageable learning queue. It is local-first: no account or paid AI service is required for the core workflow.
 
-## What works today
+## Current implementation
 
-Milestone 1—Capture and Commitment—is implemented:
+Milestone 1 of the PRD v2.1 reading-plan revision is complete:
 
-- Paste an HTTP(S) URL to save it to an Inbox, with a duplicate warning.
-- Set weekday and weekend learning availability, or skip it and configure it later.
-- Enrich and edit material metadata; manually set a duration or estimate article time from pasted text.
-- Keep content duration separate from estimated learning effort.
-- Commit selected Inbox items to a queue, set their priority, and see workload, unknown estimates, weekly capacity, and a clearance estimate.
-- Archive or delete stale materials without counting them as completed.
-- Receive shared links in supported installed-PWA environments; URL paste remains the guaranteed fallback.
+- Materials retain provider duration separately from an optional manual estimated-time correction; zero and unknown remain distinct.
+- The editor exposes one estimated-minutes correction and simple estimate labels, with only type and video speed in advanced controls.
+- Priority, learning multipliers, pasted-text word counting, and article reading-speed settings are removed.
+- Local data now uses the `stop-tumpuk-reading-plan-v1` schema and accepts only the current `stop-tumpuk-reading-plan` export format.
 
-Learning sessions, recommendations, completion, notes, export/import, and broader offline validation are planned for later milestones. See [MILESTONES.md](MILESTONES.md) for the delivery plan and [PRD.md](PRD.md) for product behavior.
+The existing capture, commitment, timer, notes, transfer, and PWA features remain in place while later milestones align their behavior with PRD v2.1. See [MILESTONES.md](MILESTONES.md) for the delivery plan and [PRD.md](PRD.md) for product behavior.
 
 ## Run locally
 

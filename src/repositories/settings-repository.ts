@@ -6,7 +6,6 @@ export const emptySettings: Settings = {
   id: 'settings',
   weekdayMinutes: null,
   weekendMinutes: null,
-  readingWpm: 250,
   onboardingDismissed: false,
   availabilityReminderAt: null,
 };
