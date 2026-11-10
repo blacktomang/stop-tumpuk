@@ -87,6 +87,9 @@ textarea:focus-visible {
   .app-content {
     @apply space-y-8 py-8 sm:py-11;
   }
+  .update-notice {
+    @apply mx-auto flex w-full max-w-6xl flex-col gap-3 border-x border-b border-(--line) bg-amber-50 px-5 py-3 text-sm font-medium text-amber-950 sm:flex-row sm:items-center sm:justify-between sm:px-8;
+  }
   .status-error {
     @apply rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900;
   }

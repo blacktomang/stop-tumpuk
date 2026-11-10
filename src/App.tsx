@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { nextAvailabilityReminder, shouldPromptForAvailability } from './application/availability-reminder';
 import { changeMaterialStatus, deleteMaterial } from './application/material-service';
 import { loadShareIntake } from './application/share-intake-service';
+import {
+  activateWaitingServiceWorker,
+  watchForServiceWorkerUpdate,
+} from './application/service-worker-update';
 import { saveSettings } from './application/settings-service';
 import { CaptureForm } from './features/capture/CaptureForm';
 import { CommitmentDashboard } from './features/dashboard/CommitmentDashboard';
@@ -26,6 +30,7 @@ export default function App() {
   const [onboarding, setOnboarding] = useState(false);
   const [intake, setIntake] = useState<CaptureIntake | null>(null);
   const [operationError, setOperationError] = useState('');
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const shouldPromptAvailability = shouldPromptForAvailability(settings);
 
   useEffect(() => {
@@ -51,6 +56,18 @@ export default function App() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    return watchForServiceWorkerUpdate(navigator.serviceWorker, (worker) =>
+      setWaitingWorker(worker as ServiceWorker),
+    );
+  }, []);
+
+  function applyUpdate() {
+    if (!waitingWorker) return;
+    activateWaitingServiceWorker(navigator.serviceWorker, waitingWorker, () => location.reload());
+  }
 
   function clearSavedIntake() {
     setIntake(null);
@@ -163,6 +180,19 @@ export default function App() {
           </Popover>
         </div>
       </header>
+      {waitingWorker && (
+        <aside className="update-notice" aria-label="Update available" role="status">
+          <p>A newer version is ready. Reload when you are ready to apply it.</p>
+          <div className="flex shrink-0 gap-2">
+            <button className="action" onClick={() => setWaitingWorker(null)}>
+              Later
+            </button>
+            <button className="primary-action" onClick={applyUpdate}>
+              Reload now
+            </button>
+          </div>
+        </aside>
+      )}
       <div className="app-content">
         {operationError && (
           <p role="alert" className="status-error">
