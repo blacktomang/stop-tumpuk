@@ -1,3 +1,12 @@
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from '@headlessui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { estimatedSeconds, formatDuration, recommendMaterials } from '../../domain';
 import {
@@ -219,6 +228,7 @@ function LearningView({
       setError('Completion was not saved. Please try again.');
     }
   }
+  const inProgress = material.status === 'in-progress';
   return (
     <div className="learning-view">
       <button className="text-action" onClick={onBack}>
@@ -226,40 +236,95 @@ function LearningView({
       </button>
       <div className="learning-view__head">
         <div>
-          <p className="section-kicker">Reading session</p>
+          <p className="section-kicker">Reading</p>
           <h3 className="modal-title">{material.title}</h3>
           <p className="modal-copy">
             {formatDuration(estimatedSeconds(material))} estimated time · {material.domain}
           </p>
         </div>
-        <a className="primary-button" href={material.originalUrl} target="_blank" rel="noreferrer">
-          Open source ↗
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          {inProgress ? (
+            <button className="primary-button" onClick={() => void complete()}>
+              Finish
+            </button>
+          ) : (
+            <a className="primary-button" href={material.originalUrl} target="_blank" rel="noreferrer">
+              Open source ↗
+            </a>
+          )}
+          <SessionOptions material={material} inProgress={inProgress} onBegin={onBegin} onNotes={onNotes} />
+        </div>
       </div>
       {error && (
         <p role="alert" className="status-error">
           {error}
         </p>
       )}
-      {material.status !== 'in-progress' && (
-        <button className="action" onClick={() => void onBegin()}>
-          Start learning
-        </button>
-      )}
       <FocusTimer material={material} onBegin={onBegin} />
-      <button className="action" onClick={() => onNotes(material)}>
-        View notes
-      </button>
-      <div className="learning-view__complete">
-        <div>
-          <p className="font-semibold text-(--ink)">Finished with this material?</p>
-          <p className="text-sm text-(--muted)">Only this button marks it Finished. A timer never does.</p>
-        </div>
-        <button className="primary-button" onClick={() => void complete()}>
-          Finish
-        </button>
-      </div>
+      {inProgress && (
+        <p className="text-sm text-(--muted)">
+          Only Finish marks this material as Finished. A timer never does.
+        </p>
+      )}
     </div>
+  );
+}
+
+function SessionOptions({
+  material,
+  inProgress,
+  onBegin,
+  onNotes,
+}: {
+  material: Material;
+  inProgress: boolean;
+  onBegin: () => Promise<void>;
+  onNotes: (material: Material) => void;
+}) {
+  const itemClass =
+    'block w-full px-3 py-2.5 text-left text-sm text-(--ink) data-focus:bg-(--surface-soft) data-focus:outline-none';
+  return (
+    <Menu>
+      <MenuButton className="action" aria-label="Session options">
+        Session options
+      </MenuButton>
+      <MenuItems
+        anchor="bottom end"
+        className="z-30 mt-2 w-52 origin-top-right rounded-xl border border-(--line) bg-(--surface) p-1 shadow-lg outline-none"
+      >
+        {!inProgress && (
+          <MenuItem>
+            {({ close }) => (
+              <button className={itemClass} onClick={() => (close(), void onBegin())}>
+                Mark as in progress
+              </button>
+            )}
+          </MenuItem>
+        )}
+        {inProgress && (
+          <MenuItem>
+            {({ close }) => (
+              <a
+                className={itemClass}
+                href={material.originalUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => close()}
+              >
+                Open source
+              </a>
+            )}
+          </MenuItem>
+        )}
+        <MenuItem>
+          {({ close }) => (
+            <button className={itemClass} onClick={() => (close(), onNotes(material))}>
+              Notes
+            </button>
+          )}
+        </MenuItem>
+      </MenuItems>
+    </Menu>
   );
 }
 
@@ -267,6 +332,7 @@ function FocusTimer({ material, onBegin }: { material: Material; onBegin: () => 
   const session = useActiveSession(material.id);
   const [now, setNow] = useState(Date.now());
   const [error, setError] = useState('');
+  const [showTimer, setShowTimer] = useState(false);
   useEffect(() => {
     if (session?.state !== 'running') return;
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
@@ -280,6 +346,9 @@ function FocusTimer({ material, onBegin }: { material: Material; onBegin: () => 
   useEffect(() => {
     if (session?.state === 'running' && remaining === 0) void endSession(session);
   }, [remaining, session]);
+  useEffect(() => {
+    if (session && session.state !== 'ended') setShowTimer(true);
+  }, [session]);
   async function start() {
     try {
       setError('');
@@ -299,7 +368,7 @@ function FocusTimer({ material, onBegin }: { material: Material; onBegin: () => 
       setError('The timer could not be updated. Please try again.');
     }
   }
-  return (
+  const timerControls = (
     <div className="focus-timer">
       <div>
         <p className="focus-timer__label">Optional 25-minute focus timer</p>
@@ -332,5 +401,22 @@ function FocusTimer({ material, onBegin }: { material: Material; onBegin: () => 
         </p>
       )}
     </div>
+  );
+  if (session && session.state !== 'ended') return timerControls;
+  return (
+    <Disclosure as="div" className="rounded-2xl border border-(--line) bg-(--surface-soft)">
+      <DisclosureButton
+        className="flex min-h-12 w-full items-center justify-between gap-4 px-4 text-left text-sm font-semibold text-(--ink)"
+        onClick={() => setShowTimer((current) => !current)}
+      >
+        <span>Optional 25-minute focus timer</span>
+        <span aria-hidden="true">{showTimer ? '−' : '+'}</span>
+      </DisclosureButton>
+      {showTimer && (
+        <DisclosurePanel static className="px-4 pb-4">
+          {timerControls}
+        </DisclosurePanel>
+      )}
+    </Disclosure>
   );
 }
