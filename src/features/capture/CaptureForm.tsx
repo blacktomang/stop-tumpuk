@@ -62,32 +62,32 @@ export function CaptureForm({ intake, onIntakeSaved }: CaptureFormProps) {
           placeholder="Paste an article or video link"
           inputMode="url"
         />
-        <button className="primary-button">
-          Save to {destination === 'queued' ? 'Reading plan' : 'Inbox'}
-        </button>
-        <fieldset className="flex flex-wrap gap-2 sm:contents">
-          <legend className="sr-only">Save destination</legend>
-          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-500 bg-slate-800 px-3 text-sm font-medium text-white has-[:checked]:border-emerald-300 has-[:checked]:bg-emerald-900">
-            <input
-              checked={destination === 'queued'}
-              className="size-4 accent-emerald-400"
-              name="capture-destination"
-              onChange={() => setDestination('queued')}
-              type="radio"
-            />
-            Reading plan
-          </label>
-          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-500 bg-slate-800 px-3 text-sm font-medium text-white has-[:checked]:border-emerald-300 has-[:checked]:bg-emerald-900">
-            <input
-              checked={destination === 'inbox'}
-              className="size-4 accent-emerald-400"
-              name="capture-destination"
-              onChange={() => setDestination('inbox')}
-              type="radio"
-            />
-            Inbox
-          </label>
-        </fieldset>
+        <div className="capture-actions">
+          <fieldset className="capture-destination rounded-r-none w-full">
+            <legend className="sr-only">Save destination</legend>
+            <label className="capture-destination__option">
+              <input
+                checked={destination === 'queued'}
+                className="capture-destination__radio"
+                name="capture-destination"
+                onChange={() => setDestination('queued')}
+                type="radio"
+              />
+              Reading plan
+            </label>
+            <label className="capture-destination__option">
+              <input
+                checked={destination === 'inbox'}
+                className="capture-destination__radio"
+                name="capture-destination"
+                onChange={() => setDestination('inbox')}
+                type="radio"
+              />
+              Inbox
+            </label>
+          </fieldset>
+          <button className="primary-button rounded-l-none">Save</button>
+        </div>
       </form>
       {message && (
         <p role="status" className="capture-status">
