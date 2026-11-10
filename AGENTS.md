@@ -20,7 +20,7 @@ Follow the user's current instructions. If an authorized change alters product b
 
 ## Current repository state
 
-The repository contains a Milestone 1 application scaffold, package manifest, and source files. Its dependencies may not be installed in every environment, so check the actual filesystem and available toolchain before running commands or describing verified behavior. The technical documents describe the intended architecture; source code and successful checks establish implementation state.
+The repository contains the existing capture-to-completion app, optional focus timer, notes, local persistence, export/import, PWA support, and a production-browser test. PRD v2.1 specifies the accepted simplification revision; the reset milestones track its implementation, not the original scaffold. Do not treat updated documents or old completed checkboxes as evidence that the revision is implemented. Physical-device persistence, offline, browser-matrix, and installed-PWA sharing checks remain release work. Check the filesystem and installed toolchain before running commands or reporting verification.
 
 ## Implementation workflow
 
@@ -30,6 +30,7 @@ The repository contains a Milestone 1 application scaffold, package manifest, an
 4. Validate the change with checks appropriate to its impact. Record what passed, what failed, and what could not run.
 5. Update milestone checkboxes only when the deliverable has been implemented and verified. Partial work stays unchecked; note the remaining work beside the item when useful.
 6. Update the owning technical document when a technical decision changes. Product changes belong in the PRD; scheduling changes belong in milestones.
+7. Follow PRD v2.1 and the milestone sequence. Only the upcoming pre-production Milestone 1 may replace the existing schema/data directly without migration adapters, deprecated-field support, or compatibility shims for the old prototype. Update all affected consumers together and preserve retained product behavior. This exception expires after that cutover; later production changes follow the data-preserving evolution policy in FR-13 and SYSTEM_DESIGN.md.
 
 Do not implement deferred features, scaffolding for hypothetical services, or unrelated refactors merely because they appear in future plans. Preserve open product questions as open until resolved by the user or an explicitly documented working assumption consistent with the PRD.
 
@@ -37,22 +38,23 @@ Do not implement deferred features, scaffolding for hypothetical services, or un
 
 - Use strict TypeScript and explicit types at persistence and provider boundaries. Validate untrusted inputs at runtime.
 - Keep duration units explicit, unknown values nullable, and deterministic business rules independently testable. Follow the estimation and state rules in the PRD rather than duplicating them here.
-- Persist data through the repository layer. Keep database schemas and migrations together; never reset a user's database to solve a migration problem.
+- Persist data through the repository layer and keep schema definitions and migrations together. The user authorizes one replacement of prototype local data during the upcoming pre-production Milestone 1 only. After that cutover, retain the database identity and preserve user data; production schema changes require versioned migrations, compatibility handling for supported released formats, and upgrade tests. Never use a reset or a new empty database to recover from production migration/storage errors. Deprecate released fields/formats deliberately, with documented support and removal decisions.
 - Treat fetched content, shared text, and imported files as untrusted data. Never execute remote scripts or render unsanitized HTML. Do not log private notes or full shared payloads by default.
 - Treat browser capabilities as enhancements. Maintain the fallback paths specified in the PRD and report capabilities accurately.
 - Keep dependency additions purposeful. Use pnpm and commit only `pnpm-lock.yaml`; do not introduce npm, Yarn, Bun, or another lockfile. Select supported versions at scaffolding time, and document the chosen Node and pnpm versions plus package scripts then.
 - Use Tailwind CSS for application styling and Headless UI for accessible interactive primitives. Keep semantic HTML, keyboard interaction, focus management, contrast, and reduced-motion support intact when composing them.
 - Use Prettier as the formatting authority. Run `pnpm format` only when formatting changed source, and use `pnpm format:check` when a formatting verification is warranted; do not hand-format generated or broadly reformatted files.
 - Do not put secrets in frontend environment variables; bundled configuration is public. Do not add an external service as a prerequisite for core behavior.
-- some tailwindcss written in old way, Use `selector-(--colorvar)` instead of `selector-[var(--colorvar)]`
+- When changing Tailwind CSS variable utilities, use `selector-(--colorvar)` instead of `selector-[var(--colorvar)]`. Avoid unrelated styling churn.
+- When coding agents are used, always include the agent co-author trailer in commits.
 
 ## Verification
 
-Use the scripts actually present in `package.json`. Intended scripts are listed in `TECH_STACK.md`; they do not exist yet. Do not report unrun checks as passing.
+Use the scripts actually present in `package.json`; `TECH_STACK.md` summarizes the existing commands. Do not report unrun checks as passing.
 
 For an ordinary completed TypeScript feature, run `pnpm typecheck` as the default required verification. Do not run `pnpm build`, `pnpm test:e2e`, or Playwright automatically after every feature. Run only the narrowest additional check justified by the change: relevant unit/storage/UI tests for changed business or persistence logic; a production build for build configuration, service worker, manifest, generated assets, or deployment changes; and Playwright for an affected end-to-end flow, browser-only behavior, regression, or milestone/release validation.
 
-Prioritize focused tests for estimation/override precedence, unknown values, backlog calculations, recommendation fitting, lifecycle transitions, migrations/import integrity, and the main capture-to-completion flow. Mock provider responses for automated tests; live platforms should not determine whether the core test suite passes.
+Prioritize focused tests for estimated-time/manual-override precedence, unknown values, capacity/overflow calculations, single-item recommendation fitting, destination-aware capture, lifecycle transitions, fresh-schema initialization/current-format import integrity, and the main capture-to-finish flow. For later production changes, also verify migrations from supported released schemas, supported backup conversions, failure rollback, and existing note/material associations. Mock provider responses for automated tests; live platforms should not determine whether the core test suite passes.
 
 Test service-worker/offline behavior against a production build. Browser emulation does not prove that a PWA appears in a phone's native share menu; record physical-device validation separately. Documentation-only changes need link and consistency checks, not new application tests.
 
