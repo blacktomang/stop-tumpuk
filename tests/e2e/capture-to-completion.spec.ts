@@ -147,6 +147,9 @@ test('keeps the mobile menu closable and layouts within the viewport', async ({ 
   await page.keyboard.press('Escape');
   await expect(menuToggle).toBeVisible();
   await menuToggle.click();
+  await page.mouse.click(20, 400);
+  await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+  await menuToggle.click();
   await page.getByRole('link', { name: 'Reading plan' }).click();
   await expect(menuToggle).toBeVisible();
   await menuToggle.click();
@@ -154,9 +157,17 @@ test('keeps the mobile menu closable and layouts within the viewport', async ({ 
     .getByRole('navigation', { name: 'stop-tumpuk navigation' })
     .getByRole('button', { name: 'Set time' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Learning availability' })).toBeVisible();
+  const availabilityHeading = page.getByRole('heading', { name: 'Learning availability' });
+  await expect(availabilityHeading).toBeVisible();
+  expect(
+    await page.evaluate(() => {
+      const dialog = document.querySelector('[role="dialog"]');
+      return dialog?.contains(document.activeElement) ?? false;
+    }),
+  ).toBe(true);
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('heading', { name: 'Learning availability' })).toHaveCount(0);
+  await expect(availabilityHeading).toHaveCount(0);
+  await expect(menuToggle).toBeFocused();
   await expect(
     page.locator('html').evaluate((element) => element.scrollWidth <= element.clientWidth),
   ).resolves.toBe(true);
