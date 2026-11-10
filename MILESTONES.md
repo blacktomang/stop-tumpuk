@@ -2,7 +2,7 @@
 
 **Version:** 2.1
 
-**Status:** Milestones 1, 2 and 3 verified November 10, 2026; and Milestones 4–5 remain unverified
+**Status:** Milestones 1–4 verified November 10, 2026. Milestone 5 automated validation is verified; physical-device and installed-Android sharing gates remain open.
 
 **Product authority:** [PRD.md](PRD.md) v2.1
 
@@ -63,13 +63,13 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** FR-08, FR-10, FR-12.
 
-- [ ] Apply primary-action plus Advanced actions grouping to Inbox and Reading-plan rows; retain edit, notes, return, archive, and delete access as appropriate.
-- [ ] Simplify reading-session actions according to context while keeping Back and running timer controls directly reachable; hiding optional controls must not interrupt timer lifecycle handling.
-- [ ] Replace the six status-filter buttons with one labeled dropdown and retain search/filter behavior.
-- [ ] Keep New note prominent and move each note's Edit/Delete into an item menu; preserve existing multiple-notes-per-material support. Verify adding two notes to one material, independent editing/deletion, search, and access after finishing; retain deletion confirmation.
-- [ ] Separate the import-preview step from export controls without removing validation, conflict counts, Cancel, or the ability to close.
-- [ ] Apply the FR-12 terminology throughout capture, dashboard, reading, material lists, dialogs, errors, empty states, and accessibility labels. Update internal identifiers consistently if needed; no legacy mapping is required.
-- [ ] Preserve the existing closable mobile header menu; verify menu-to-dialog focus transfer, Escape/outside dismissal, keyboard selection, touch targets, and clipping at mobile/desktop widths.
+- [x] Apply primary-action plus Advanced actions grouping to Inbox and Reading-plan rows; retain edit, notes, return, archive, and delete access as appropriate.
+- [x] Simplify reading-session actions according to context while keeping Back and running timer controls directly reachable; hiding optional controls must not interrupt timer lifecycle handling.
+- [x] Replace the six status-filter buttons with one labeled dropdown and retain search/filter behavior.
+- [x] Keep New note prominent and move each note's Edit/Delete into an item menu; preserve existing multiple-notes-per-material support. Verify adding two notes to one material, independent editing/deletion, search, and access after finishing; retain deletion confirmation.
+- [x] Separate the import-preview step from export controls without removing validation, conflict counts, Cancel, or the ability to close.
+- [x] Apply the FR-12 terminology throughout capture, dashboard, reading, material lists, dialogs, errors, empty states, and accessibility labels. Update internal identifiers consistently if needed; no legacy mapping is required.
+- [x] Preserve the existing closable mobile header menu; verify menu-to-dialog focus transfer, Escape/outside dismissal, keyboard selection, touch targets, and clipping at mobile/desktop widths.
 
 **Acceptance gate:** Each affected task has an evident main action, all secondary actions remain reachable, and smaller action groups do not acquire unnecessary nesting. Run type checking and focused browser interaction checks; inspect the changed responsive layouts.
 
@@ -77,16 +77,24 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** PRD section 11; FR-13, FR-14; AGENTS verification policy.
 
-- [ ] Update the production-browser capture-to-finish flow for Reading-plan default, explicit Inbox, edited estimate, single recommendation, direct finish, and later on-demand note retrieval. Mock external metadata responses.
-- [ ] Verify fresh setup and the one-time schema replacement, then reload/export/import new-format records with manual estimates, multiple notes per material, and active/paused timers. Confirm new data is not repeatedly reset and unsupported old backups cannot modify it.
-- [ ] Run the revision release checks using the actual package scripts: typecheck, relevant/full unit-storage suite, lint, formatting check, production build, and production-browser tests. Record commands and actual outcomes.
-- [ ] Validate production service-worker/offline access to stored material metadata, notes, and plan; verify update behavior and browser restart persistence.
-- [ ] Select and record browser/OS/device versions. Validate mobile and desktop paste-to-finish, responsive capacity display, action menus, and fallback source links; distinguish automated engines from real devices.
+- [x] Update the production-browser capture-to-finish flow for Reading-plan default, explicit Inbox, edited estimate, single recommendation, direct finish, and later on-demand note retrieval. Mock external metadata responses.
+- [x] Verify fresh setup and the one-time schema replacement, then reload/export/import new-format records with manual estimates, multiple notes per material, and active/paused timers. Confirm new data is not repeatedly reset and unsupported old backups cannot modify it.
+- [x] Run the revision release checks using the actual package scripts: typecheck, relevant/full unit-storage suite, lint, formatting check, production build, and production-browser tests. Record commands and actual outcomes.
+- [x] Validate production service-worker/offline access to stored material metadata, notes, and plan; verify update behavior and browser restart persistence.
+- [x] Select and record browser/OS/device versions. Validate mobile and desktop paste-to-finish, responsive capacity display, action menus, and fallback source links; distinguish automated engines from real devices.
 - [ ] On a physical installed Android Chrome PWA, validate incoming URL/text shares, destination selection, and duplicate handling. Record unsupported combinations accurately; do not imply iOS/Safari incoming-share support.
-- [ ] Record the first production database/schema and export-format baseline, supported released-format policy, and future migration/deprecation process from FR-13 and SYSTEM_DESIGN. Confirm the prototype reset cannot recur as a normal update or production recovery path. Do not build speculative future migrations.
+- [x] Record the first production database/schema and export-format baseline, supported released-format policy, and future migration/deprecation process from FR-13 and SYSTEM_DESIGN. Confirm the prototype reset cannot recur as a normal update or production recovery path. Do not build speculative future migrations.
 - [ ] Reconcile implementation notes and remaining limitations with the source-of-truth documents. Confirm every PRD v2.1 acceptance criterion has evidence before release.
 
 **Acceptance gate:** All revision requirements have implementation and verification evidence. Browser emulation does not satisfy native-share or physical-device gates. Failed/unrun checks stay unchecked, with the remaining limitation recorded.
+
+### Verification record — November 10, 2026
+
+- Passed: `pnpm typecheck`; `pnpm test` (10 files, 43 tests); `pnpm lint`; `pnpm format:check`; `pnpm build`; and `pnpm test:e2e` (5 Chromium production-build flows).
+- Automated desktop/browser: Playwright 1.65.0 with Chromium 158.0.8127.18 on Linux 6.18.58.1-microsoft-standard-WSL2 x86_64. The browser flows cover Reading-plan default capture, explicit Inbox capture, mocked YouTube enrichment, estimate editing, one recommendation, direct finish, on-demand notes, current-format import/export, paused timers, reload and persistent-browser restart, offline reload, the update-activation contract, keyboard menus, and external-source fallback links.
+- Automated mobile layout: Chromium at a 390 × 844 viewport validates capture-to-finish, capacity display, fallback external link, responsive action menus, and mobile navigation. This is emulation, not a physical phone/browser result.
+- Data baseline for the first production release: IndexedDB identity `stop-tumpuk-reading-plan-v1`, schema version 1, and export envelope `stop-tumpuk-reading-plan` version 1. The discarded prototype may not be reset or converted again. Post-release changes retain this identity and use versioned Dexie upgrades plus explicitly supported export conversions as described in `SYSTEM_DESIGN.md`.
+- Still unrun: physical mobile persistence/offline checks, cross-engine Firefox/WebKit checks, and installed Android Chrome URL/text share intake including duplicate handling. No iOS/Safari incoming-share support is claimed. These open release-gate items keep the Milestone 5 acceptance gate unchecked.
 
 ## Deferred work and scope control
 
