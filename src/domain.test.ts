@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   backlog,
+  capacityViewModel,
   estimatedSeconds,
   extractSharedUrl,
   normalizeUrl,
@@ -68,6 +69,45 @@ describe('Milestone 1 planning rules', () => {
     expect(result).toMatchObject({ active: 2, known: 600, unknown: 1, capacity: 16_200 });
   });
 
+  it('models unset, zero, empty, under-capacity, full, and overflow plans without dividing by zero', () => {
+    expect(capacityViewModel([material()], null, 60)).toMatchObject({
+      state: 'unset',
+      visualFraction: null,
+      clearanceWeeks: null,
+    });
+    expect(capacityViewModel([material()], 0, 0)).toMatchObject({
+      state: 'zero',
+      visualFraction: null,
+      clearanceWeeks: null,
+    });
+    expect(capacityViewModel([], 30, 60)).toMatchObject({
+      state: 'empty',
+      visualFraction: 0,
+      headroomSeconds: 16_200,
+    });
+    expect(capacityViewModel([material()], 30, 60)).toMatchObject({
+      state: 'under',
+      visualFraction: 600 / 16_200,
+      headroomSeconds: 15_600,
+    });
+    expect(capacityViewModel([material({ manualEstimatedSeconds: 16_200 })], 30, 60)).toMatchObject({
+      state: 'full',
+      visualFraction: 1,
+      headroomSeconds: 0,
+    });
+    expect(capacityViewModel([material({ manualEstimatedSeconds: 18_000 })], 30, 60)).toMatchObject({
+      state: 'overflow',
+      visualFraction: 1,
+      overflowSeconds: 1_800,
+    });
+  });
+
+  it('keeps unknown estimates out of the meter while reporting their count', () => {
+    expect(
+      capacityViewModel([material(), material({ id: 'unknown', sourceDurationSeconds: null })], 30, 60),
+    ).toMatchObject({ state: 'under', plannedSeconds: 600, unknownCount: 1 });
+  });
+
   it('preserves a resource fragment while removing known campaign parameters', () => {
     const normalized = normalizeUrl(new URL('https://example.com/article?utm_source=social#section'));
     expect(normalized).toBe('https://example.com/article#section');
@@ -90,7 +130,8 @@ describe('recommendation ordering without priority', () => {
       ],
       600,
     );
-    expect(result.fitting.map((item) => item.id)).toEqual(['in-progress', 'first', 'later']);
+    expect(result.primary?.id).toBe('in-progress');
+    expect(result.manual.map((item) => item.id)).toEqual(['in-progress', 'first', 'later']);
   });
 
   it('does not claim unknown estimates fit and offers a longer partial-session option', () => {
@@ -101,7 +142,19 @@ describe('recommendation ordering without priority', () => {
       ],
       600,
     );
-    expect(result.fitting).toEqual([]);
+    expect(result.primary).toBeNull();
     expect(result.partial?.id).toBe('long');
+    expect(result.manual.map((item) => item.id)).toEqual(['long', 'unknown']);
+  });
+
+  it('uses stable IDs when all higher ranking fields tie', () => {
+    const result = recommendMaterials(
+      [
+        material({ id: 'b', manualEstimatedSeconds: 300 }),
+        material({ id: 'a', manualEstimatedSeconds: 300 }),
+      ],
+      300,
+    );
+    expect(result.primary?.id).toBe('a');
   });
 });
