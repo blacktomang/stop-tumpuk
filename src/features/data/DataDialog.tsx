@@ -7,6 +7,12 @@ export function DataDialog({ open, onClose }: { open: boolean; onClose: () => vo
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  function close() {
+    setPreview(null);
+    setError('');
+    if (input.current) input.current.value = '';
+    onClose();
+  }
   async function download() {
     try {
       setBusy(true);
@@ -73,25 +79,59 @@ export function DataDialog({ open, onClose }: { open: boolean; onClose: () => vo
           <DialogPanel className="modal-panel max-w-xl">
             {preview ? (
               <ImportPreviewStep
-                busy={busy}
                 preview={preview}
-                onCancel={cancelPreview}
-                onImport={() => void apply()}
+                busy={busy}
+                onCancel={() => setPreview(null)}
+                onApply={apply}
               />
             ) : (
-              <DataChooser
-                busy={busy}
-                error={error}
-                input={input}
-                onDownload={() => void download()}
-                onChoose={choose}
-              />
+              <>
+                <p className="section-kicker">Local data</p>
+                <DialogTitle className="modal-title">Back up or move your library</DialogTitle>
+                <p className="modal-copy">
+                  Your data stays in this browser profile. Clearing browser data or using another device will
+                  not carry it over automatically. Export a file to keep a backup or transfer it manually.
+                </p>
+                {error && (
+                  <p role="alert" className="mt-4 text-sm text-rose-700">
+                    {error}
+                  </p>
+                )}
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div className="form-panel">
+                    <p className="font-semibold">Export</p>
+                    <p className="mt-1 text-sm text-(--muted)">
+                      Download materials, notes, settings, sessions, and history.
+                    </p>
+                    <button
+                      className="primary-button mt-4 min-h-10 px-4 py-2"
+                      disabled={busy}
+                      onClick={() => void download()}
+                    >
+                      Download export
+                    </button>
+                  </div>
+                  <div className="form-panel">
+                    <p className="font-semibold">Import</p>
+                    <p className="mt-1 text-sm text-(--muted)">
+                      Adds valid new records only. Existing matching IDs are never overwritten.
+                    </p>
+                    <input
+                      ref={input}
+                      className="mt-4 block w-full text-sm"
+                      type="file"
+                      accept="application/json,.json"
+                      onChange={(event) => void choose(event.target.files?.[0])}
+                    />
+                  </div>
+                </div>
+                <div className="mt-5 flex justify-end">
+                  <button className="action" onClick={close}>
+                    Close
+                  </button>
+                </div>
+              </>
             )}
-            <div className="mt-5 flex justify-end">
-              <button className="action" onClick={close}>
-                Close
-              </button>
-            </div>
           </DialogPanel>
         </div>
       </div>
