@@ -2,7 +2,7 @@
 
 **Version:** 2.1
 
-**Status:** Milestone 1 verified November 10, 2026; later deliverables remain unverified and unchecked
+**Status:** Milestones 1–2 verified November 10, 2026; later deliverables remain unverified and unchecked
 
 **Product authority:** [PRD.md](PRD.md) v2.1
 
@@ -38,11 +38,11 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** FR-02, FR-05, FR-13.
 
-- [ ] Add the visible Reading plan/Inbox choice to capture, defaulting to Reading plan for each new capture, without adding a second confirmation step.
-- [ ] Pass the destination through validation, duplicate confirmation/retry, save, and optional enrichment; use accurate success/error copy.
-- [ ] Persist direct commitment history with Reading-plan capture in one transaction; Inbox captures remain uncommitted.
-- [ ] Route incoming-share candidates through the same destination-aware form; reloads/retries do not silently create extra saves or commitments.
-- [ ] Verify saving without metadata, estimates, installation, or availability; test both destinations, duplicate retries, storage errors, and commitment accounting.
+- [x] Add the visible Reading plan/Inbox choice to capture, defaulting to Reading plan for each new capture, without adding a second confirmation step.
+- [x] Pass the destination through validation, duplicate confirmation/retry, save, and optional enrichment; use accurate success/error copy.
+- [x] Persist direct commitment history with Reading-plan capture in one transaction; Inbox captures remain uncommitted.
+- [x] Route incoming-share candidates through the same destination-aware form; reloads/retries do not silently create extra saves or commitments.
+- [x] Verify saving without metadata, estimates, installation, or availability; test both destinations, duplicate retries, storage errors, and commitment accounting.
 
 **Acceptance gate:** The chosen destination determines status/history/backlog correctly, including duplicate and share-intake paths. Run type checking and focused capture/storage tests; use mocked provider responses.
 

@@ -1,7 +1,11 @@
 import 'fake-indexeddb/auto';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../db';
 import { captureUrl } from './capture-service';
+
+vi.mock('../providers/metadata-provider', () => ({
+  enrichMetadata: vi.fn().mockResolvedValue({}),
+}));
 
 beforeEach(async () => {
   await db.transaction('rw', db.materials, db.events, db.captureIntake, async () => {
@@ -38,6 +42,20 @@ describe('destination-aware capture storage', () => {
     expect(await db.events.where('materialId').equals(result.material.id).toArray()).toMatchObject([
       { type: 'captured' },
     ]);
+  });
+
+  it('saves without metadata, an estimate, availability, or an installed share target', async () => {
+    const result = await captureUrl('https://example.com/no-setup-required', 'queued');
+    expect(result.kind).toBe('saved');
+    if (result.kind !== 'saved') return;
+
+    expect(result.material).toMatchObject({
+      title: 'example.comno setup required',
+      sourceDurationSeconds: null,
+      manualEstimatedSeconds: null,
+      status: 'queued',
+    });
+    expect(await db.settings.count()).toBe(0);
   });
 
   it('preserves the chosen destination through a duplicate retry', async () => {
@@ -77,6 +95,15 @@ describe('destination-aware capture storage', () => {
     await expect(
       captureUrl('https://example.com/stale-share', 'queued', { intakeId: 'already-consumed' }),
     ).rejects.toThrow('no longer available');
+    expect(await db.materials.count()).toBe(0);
+    expect(await db.events.count()).toBe(0);
+  });
+
+  it('rolls back a direct commitment when its lifecycle history cannot be persisted', async () => {
+    const randomId = vi.spyOn(crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000001');
+    await expect(captureUrl('https://example.com/rollback', 'queued')).rejects.toThrow();
+    randomId.mockRestore();
+
     expect(await db.materials.count()).toBe(0);
     expect(await db.events.count()).toBe(0);
   });
