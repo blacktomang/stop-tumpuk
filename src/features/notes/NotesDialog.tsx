@@ -1,4 +1,5 @@
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { createNote, deleteNote, updateNote, useNotes } from '../../repositories/note-repository';
 import { field } from '../../shared/ui/classes';
@@ -130,14 +131,29 @@ export function NotesDialog({ material, onClose }: { material: Material | null; 
                         <p className="whitespace-pre-wrap text-sm leading-6 text-(--ink)">{note.content}</p>
                         <div className="mt-3 flex items-center justify-between gap-3 text-xs text-(--muted)">
                           <span>Updated {new Date(note.updatedAt).toLocaleDateString()}</span>
-                          <span className="flex gap-2">
-                            <button className="action" onClick={() => startEditing(note)}>
-                              Edit
-                            </button>
-                            <button className="action-danger" onClick={() => void remove(note)}>
-                              Delete
-                            </button>
-                          </span>
+                          <Menu as="div" className="relative">
+                            <MenuButton
+                              className="action-icon"
+                              aria-label={`Actions for note updated ${new Date(note.updatedAt).toLocaleDateString()}`}
+                            >
+                              <EllipsisHorizontalIcon aria-hidden="true" className="size-5" />
+                            </MenuButton>
+                            <MenuItems anchor="bottom end" className="action-menu">
+                              <MenuItem>
+                                <button className="action-menu__item" onClick={() => startEditing(note)}>
+                                  Edit note
+                                </button>
+                              </MenuItem>
+                              <MenuItem>
+                                <button
+                                  className="action-menu__item action-menu__item--danger"
+                                  onClick={() => void remove(note)}
+                                >
+                                  Delete note
+                                </button>
+                              </MenuItem>
+                            </MenuItems>
+                          </Menu>
                         </div>
                       </article>
                     ))}

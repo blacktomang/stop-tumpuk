@@ -1,3 +1,5 @@
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { estimateLabel, estimatedSeconds, formatDuration } from '../../domain';
 import type { Material, MaterialStatus } from '../../types';
@@ -40,23 +42,27 @@ export function MaterialLists({ materials, onEdit, onNotes, onMove, onDelete }: 
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search titles, domains, or URLs"
         />
-        <div className="filter-buttons" aria-label="Filter by status">
-          {(['all', 'inbox', 'queued', 'in-progress', 'completed', 'archived'] as const).map((option) => (
-            <button
-              key={option}
-              className={status === option ? 'filter-button filter-button--active' : 'filter-button'}
-              onClick={() => setStatus(option)}
-            >
-              {option === 'all' ? 'All' : option.replace('-', ' ')}
-            </button>
-          ))}
-        </div>
+        <label className="status-filter" htmlFor="material-status-filter">
+          <span>Status</span>
+          <select
+            id="material-status-filter"
+            value={status}
+            onChange={(event) => setStatus(event.target.value as MaterialStatus | 'all')}
+          >
+            <option value="all">All saved materials</option>
+            <option value="inbox">Inbox</option>
+            <option value="queued">Reading plan</option>
+            <option value="in-progress">In progress</option>
+            <option value="completed">Finished</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
       </section>
       <section aria-label="Your saved materials" className="workspace-grid">
         <MaterialList
-          title="Learning queue"
+          title="Reading plan"
           materials={queue}
-          empty="Commit a few Inbox items when they are worth your time."
+          empty="Move an Inbox item here when you are ready to make time for it."
           onEdit={onEdit}
           onNotes={onNotes}
           onMove={onMove}
@@ -87,18 +93,18 @@ function MaterialList({
   onMove,
   onDelete,
 }: Omit<MaterialListsProps, 'materials'> & {
-  title: string;
+  title: 'Inbox' | 'Reading plan';
   materials: Material[];
   empty: string;
 }) {
-  const sectionId = title === 'Inbox' ? 'inbox' : 'queue';
+  const isInbox = title === 'Inbox';
   return (
-    <section id={sectionId} className="list-panel scroll-mt-24">
+    <section id={isInbox ? 'inbox' : 'queue'} className="list-panel scroll-mt-24">
       <div className="list-panel__head">
         <div>
           <h2 className="list-panel__title">{title}</h2>
           <p className="list-panel__copy">
-            {title === 'Inbox'
+            {isInbox
               ? 'Saved links that are not a commitment yet.'
               : 'Items you have chosen to make time for.'}
           </p>
@@ -109,38 +115,35 @@ function MaterialList({
         {materials.length ? (
           materials.map((material) => (
             <article key={material.id} className="material-row">
-              <div className="flex gap-3">
-                <div className="min-w-0 flex-1">
-                  <a className="material-title" href={material.originalUrl} target="_blank" rel="noreferrer">
-                    {material.title}
-                  </a>
-                  <p className="material-meta">
-                    {material.domain} · {material.type} · {estimateLabel(material)}
-                  </p>
-                  <p className="material-effort">
-                    Estimated time: <strong>{formatDuration(estimatedSeconds(material))}</strong>
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <a className="material-title" href={material.originalUrl} target="_blank" rel="noreferrer">
+                  {material.title}
+                </a>
+                <p className="material-meta">
+                  {material.domain} · {material.type} · {estimateLabel(material)}
+                </p>
+                <p className="material-effort">
+                  Estimated time: <strong>{formatDuration(estimatedSeconds(material))}</strong>
+                </p>
               </div>
               <div className="material-actions">
-                <button className="action" onClick={() => onEdit(material)}>
-                  Edit estimate
-                </button>
-                <button className="action" onClick={() => onNotes(material)}>
-                  Notes
-                </button>
-                <button
-                  className="action"
-                  onClick={() => onMove(material, title === 'Inbox' ? 'queued' : 'inbox')}
-                >
-                  {title === 'Inbox' ? 'Commit' : 'Return to Inbox'}
-                </button>
-                <button className="action" onClick={() => onMove(material, 'archived')}>
-                  Archive
-                </button>
-                <button className="action-danger" onClick={() => onDelete(material)}>
-                  Delete
-                </button>
+                {isInbox ? (
+                  <button className="primary-action" onClick={() => onMove(material, 'queued')}>
+                    Add to Reading plan
+                  </button>
+                ) : (
+                  <a className="primary-action" href={material.originalUrl} target="_blank" rel="noreferrer">
+                    Open source
+                  </a>
+                )}
+                <MaterialActions
+                  material={material}
+                  onEdit={onEdit}
+                  onNotes={onNotes}
+                  onMove={onMove}
+                  onDelete={onDelete}
+                  includeReturn={!isInbox}
+                />
               </div>
             </article>
           ))
@@ -149,6 +152,52 @@ function MaterialList({
         )}
       </div>
     </section>
+  );
+}
+
+function MaterialActions({
+  material,
+  onEdit,
+  onNotes,
+  onMove,
+  onDelete,
+  includeReturn,
+}: Omit<MaterialListsProps, 'materials'> & { material: Material; includeReturn: boolean }) {
+  return (
+    <Menu as="div" className="relative">
+      <MenuButton className="action-icon" aria-label={`Advanced actions for ${material.title}`}>
+        <EllipsisHorizontalIcon aria-hidden="true" className="size-5" />
+      </MenuButton>
+      <MenuItems anchor="bottom end" className="action-menu">
+        <MenuItem>
+          <button className="action-menu__item" onClick={() => onEdit(material)}>
+            Edit estimated time
+          </button>
+        </MenuItem>
+        <MenuItem>
+          <button className="action-menu__item" onClick={() => onNotes(material)}>
+            Notes
+          </button>
+        </MenuItem>
+        {includeReturn && (
+          <MenuItem>
+            <button className="action-menu__item" onClick={() => onMove(material, 'inbox')}>
+              Return to Inbox
+            </button>
+          </MenuItem>
+        )}
+        <MenuItem>
+          <button className="action-menu__item" onClick={() => onMove(material, 'archived')}>
+            Archive
+          </button>
+        </MenuItem>
+        <MenuItem>
+          <button className="action-menu__item action-menu__item--danger" onClick={() => onDelete(material)}>
+            Delete
+          </button>
+        </MenuItem>
+      </MenuItems>
+    </Menu>
   );
 }
 
@@ -170,12 +219,31 @@ function Completed({
           <div key={material.id} className="archive-row">
             <span className="truncate text-sm font-medium text-(--ink)">{material.title}</span>
             <span className="flex shrink-0 gap-2">
-              <button className="action" onClick={() => onNotes(material)}>
-                Notes
-              </button>
-              <button className="action" onClick={() => onMove(material, 'queued')}>
+              <button className="primary-action" onClick={() => onMove(material, 'queued')}>
                 Reopen
               </button>
+              <Menu as="div" className="relative">
+                <MenuButton className="action-icon" aria-label={`Advanced actions for ${material.title}`}>
+                  <EllipsisHorizontalIcon aria-hidden="true" className="size-5" />
+                </MenuButton>
+                <MenuItems anchor="bottom end" className="action-menu">
+                  <MenuItem>
+                    <button className="action-menu__item" onClick={() => onNotes(material)}>
+                      Notes
+                    </button>
+                  </MenuItem>
+                  <MenuItem>
+                    <a
+                      className="action-menu__item"
+                      href={material.originalUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open source
+                    </a>
+                  </MenuItem>
+                </MenuItems>
+              </Menu>
             </span>
           </div>
         ))}
@@ -202,12 +270,24 @@ function Archived({
           <div key={material.id} className="archive-row">
             <span className="truncate text-sm font-medium text-(--ink)">{material.title}</span>
             <span className="flex shrink-0 gap-2">
-              <button className="action" onClick={() => onMove(material, 'inbox')}>
+              <button className="primary-action" onClick={() => onMove(material, 'inbox')}>
                 Return to Inbox
               </button>
-              <button className="action-danger" onClick={() => onDelete(material)}>
-                Delete
-              </button>
+              <Menu as="div" className="relative">
+                <MenuButton className="action-icon" aria-label={`Advanced actions for ${material.title}`}>
+                  <EllipsisHorizontalIcon aria-hidden="true" className="size-5" />
+                </MenuButton>
+                <MenuItems anchor="bottom end" className="action-menu">
+                  <MenuItem>
+                    <button
+                      className="action-menu__item action-menu__item--danger"
+                      onClick={() => onDelete(material)}
+                    >
+                      Delete
+                    </button>
+                  </MenuItem>
+                </MenuItems>
+              </Menu>
             </span>
           </div>
         ))}
