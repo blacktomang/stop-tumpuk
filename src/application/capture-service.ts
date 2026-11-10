@@ -1,12 +1,14 @@
 import { classifyUrl, inferredTitle, normalizeUrl } from '../domain';
 import { enrichMetadata } from '../providers/metadata-provider';
 import {
-  addMaterial,
+  addCapturedMaterial,
   findMaterialByNormalizedUrl,
   getMaterial,
   updateMaterial,
 } from '../repositories/material-repository';
-import type { Material } from '../types';
+import type { Material, MaterialStatus } from '../types';
+
+export type CaptureDestination = Extract<MaterialStatus, 'inbox' | 'queued'>;
 
 export type CaptureResult =
   | { kind: 'saved'; material: Material }
@@ -16,7 +18,7 @@ export type CaptureResult =
       retry: () => Promise<CaptureResult>;
     };
 
-function newMaterial(rawUrl: string): Material {
+function newMaterial(rawUrl: string, destination: CaptureDestination): Material {
   const { url, type, source } = classifyUrl(rawUrl);
   const timestamp = new Date().toISOString();
   return {
@@ -27,7 +29,7 @@ function newMaterial(rawUrl: string): Material {
     title: inferredTitle(url),
     thumbnailUrl: null,
     type,
-    status: 'inbox',
+    status: destination,
     sourceDurationSeconds: null,
     sourceDurationProvenance: source,
     sourceDurationCompleteness: 'unknown',
@@ -56,17 +58,21 @@ async function enrichSavedMaterial(material: Material): Promise<void> {
   }
 }
 
-export async function captureUrl(rawUrl: string, allowDuplicate = false): Promise<CaptureResult> {
-  const material = newMaterial(rawUrl.trim());
+export async function captureUrl(
+  rawUrl: string,
+  destination: CaptureDestination,
+  allowDuplicate = false,
+): Promise<CaptureResult> {
+  const material = newMaterial(rawUrl.trim(), destination);
   const existing = await findMaterialByNormalizedUrl(material.normalizedUrl);
   if (existing && !allowDuplicate) {
     return {
       kind: 'duplicate',
       existing,
-      retry: () => captureUrl(rawUrl, true),
+      retry: () => captureUrl(rawUrl, destination, true),
     };
   }
-  await addMaterial(material);
+  await addCapturedMaterial(material);
   void enrichSavedMaterial(material);
   return { kind: 'saved', material };
 }

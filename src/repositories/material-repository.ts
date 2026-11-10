@@ -14,7 +14,12 @@ export async function getMaterial(id: string): Promise<Material | undefined> {
   return db.materials.get(id);
 }
 
-export async function addMaterial(material: Material): Promise<void> {
+/**
+ * Saves a capture and its initial lifecycle history as one durable operation.
+ * A direct Reading-plan capture is both captured and committed; an Inbox
+ * capture records only the capture.
+ */
+export async function addCapturedMaterial(material: Material): Promise<void> {
   await db.transaction('rw', db.materials, db.events, async () => {
     await db.materials.add(material);
     await db.events.add({
@@ -23,6 +28,14 @@ export async function addMaterial(material: Material): Promise<void> {
       type: 'captured',
       at: material.createdAt,
     });
+    if (material.status === 'queued') {
+      await db.events.add({
+        id: crypto.randomUUID(),
+        materialId: material.id,
+        type: 'queued',
+        at: material.createdAt,
+      });
+    }
   });
 }
 
