@@ -2,7 +2,7 @@
 
 **Version:** 2.1
 
-**Status:** Milestone 1 verified November 10, 2026; later deliverables remain unverified and unchecked
+**Status:** Milestones 1 and 3 verified November 10, 2026; Milestone 2 is in progress, and Milestones 4–5 remain unverified
 
 **Product authority:** [PRD.md](PRD.md) v2.1
 
@@ -50,12 +50,12 @@ Complete Milestone 1's data/estimation foundation before relying on the new esti
 
 **References:** FR-01, FR-06 through FR-10.
 
-- [ ] Replace dashboard statistic cards with the conversational weekly-capacity view model and accessible fill visualization; preserve separate weekday/weekend allowance editing.
-- [ ] Cover empty, under-capacity, full, overflow, unknown-estimate, zero, and unset states. Qualify headroom/projections correctly and avoid implying completion progress or a weekly reset.
-- [ ] Show one deterministic fitting recommendation, with Choose another and truthful no-match/partial-session alternatives. Remove priority dependence while preserving stable ordering.
-- [ ] Remove the automatic takeaway prompt and its post-completion state. Finish transactionally, refresh plan/recommendation state, and leave notes accessible on demand, including from Finished items.
-- [ ] Retain the optional 25-minute timer, start/pause/resume/end controls, and reload recovery. Completing a timer never finishes an item or decreases its estimate.
-- [ ] Verify capacity calculations, recommendation ties/fitting, refresh after lifecycle changes, finish without timer/note, and independent note failures.
+- [x] Replace dashboard statistic cards with the conversational weekly-capacity view model and accessible fill visualization; preserve separate weekday/weekend allowance editing.
+- [x] Cover empty, under-capacity, full, overflow, unknown-estimate, zero, and unset states. Qualify headroom/projections correctly and avoid implying completion progress or a weekly reset.
+- [x] Show one deterministic fitting recommendation, with Choose another and truthful no-match/partial-session alternatives. Remove priority dependence while preserving stable ordering.
+- [x] Remove the automatic takeaway prompt and its post-completion state. Finish transactionally, refresh plan/recommendation state, and leave notes accessible on demand, including from Finished items.
+- [x] Retain the optional 25-minute timer, start/pause/resume/end controls, and reload recovery. Completing a timer never finishes an item or decreases its estimate.
+- [x] Verify capacity calculations, recommendation ties/fitting, refresh after lifecycle changes, finish without timer/note, and independent note failures.
 
 **Acceptance gate:** The primary screen communicates the time commitment and one useful next action. Finishing frees planned capacity immediately after a successful save, without an extra note step. Run type checking, relevant domain/storage checks, and the affected browser flow; verify text equivalents and reduced motion.
 
